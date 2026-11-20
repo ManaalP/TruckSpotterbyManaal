@@ -1,0 +1,41 @@
+/* Design Tokens conforming to Stitch Spec & GEMINI.md */
+:root {
+  --color-background: #F7F8FA;
+  --color-surface: #FFFFFF;
+  --color-border: #E1E5EA;
+  --color-text-primary: #1B2430;
+  --color-text-muted: #5B6675;
+
+  --color-accent: #1F5FBF;
+  --color-accent-hover: #174A96;
+  --color-accent-light: #EBF2FC;
+
+  /* Risk status palette */
+  --color-risk-low: #2E8B57;
+  --color-risk-moderate: #E5B800;
+  --color-risk-high: #E07A1F;
+  --color-risk-severe: #C62828;
+  --color-risk-no-travel: #4A0E1A;
+
+  --radius-default: 8px;
+  --radius-pill: 9999px;
+
+  --font-family-base: 'Inter', sans-serif;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+    font-family: var(--font-family-base);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}

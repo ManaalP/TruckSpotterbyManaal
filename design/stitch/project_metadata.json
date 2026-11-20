@@ -1,0 +1,251 @@
+{
+  "name": "projects/5209370090189557357",
+  "title": "Weather-Aware Truck Routing",
+  "visibility": "PUBLIC",
+  "createTime": "2026-11-20T16:12:53.055703Z",
+  "updateTime": "2026-11-20T16:17:36.559389Z",
+  "projectType": "TEXT_TO_UI_PRO",
+  "thumbnailScreenshot": {
+    "name": "projects/5209370090189557357/screens/bc727905f938489885292c5887c3aa4b/fileEntries/screenshot",
+    "downloadUrl": "https://lh3.googleusercontent.com/aida/ALJJyrBY3yuzrjyggYQMGwQzQjnJ5FcA-NSiwIwlWAnqGeEa_nLtrri-UIrh7rQRE8RMDxpxXrECFdkFqTJVlv1u6K5-oDIbiRhnKfXgP2cSFzFOCg9o8uNOun1NmcEQ3PZU0G2lOBEofd-lefGvohYCXp-vUEiTZ3fFyLpmJor-GkSxES5QCbgZ2AnqYpy0tqvBIDrIB61seEWmZbRX7JIALiFpOStJO1DxJCiTSaDvmMyg"
+  },
+  "origin": "WEB",
+  "deviceType": "DESKTOP",
+  "designTheme": {
+    "colorMode": "LIGHT",
+    "font": "INTER",
+    "roundness": "ROUND_EIGHT",
+    "customColor": "#1f5fbf",
+    "headlineFont": "INTER",
+    "bodyFont": "INTER",
+    "labelFont": "INTER",
+    "namedColors": {
+      "on_secondary_fixed": "#111c29",
+      "on_secondary_container": "#5a6574",
+      "primary_fixed": "#d8e2ff",
+      "surface_container_high": "#e0e9f9",
+      "secondary": "#545f6e",
+      "on_surface": "#131c28",
+      "outline_variant": "#c2c6d4",
+      "on_error_container": "#93000a",
+      "error_container": "#ffdad6",
+      "surface_variant": "#dae3f4",
+      "surface_container_highest": "#dae3f4",
+      "tertiary_container": "#9a4e00",
+      "on_primary_fixed_variant": "#004395",
+      "on_primary_fixed": "#001a42",
+      "error": "#ba1a1a",
+      "on_tertiary_container": "#ffd7be",
+      "secondary_fixed_dim": "#bcc7d9",
+      "on_primary_container": "#d2deff",
+      "on_primary": "#ffffff",
+      "surface_tint": "#185bbb",
+      "inverse_primary": "#aec6ff",
+      "inverse_surface": "#28313d",
+      "outline": "#737784",
+      "on_surface_variant": "#424752",
+      "on_tertiary_fixed_variant": "#713700",
+      "on_secondary": "#ffffff",
+      "on_tertiary": "#ffffff",
+      "on_secondary_fixed_variant": "#3d4856",
+      "surface_dim": "#d1daeb",
+      "on_background": "#131c28",
+      "primary": "#00479c",
+      "tertiary_fixed_dim": "#ffb783",
+      "tertiary": "#773a00",
+      "primary_fixed_dim": "#aec6ff",
+      "surface_container_low": "#eff4ff",
+      "inverse_on_surface": "#eaf1ff",
+      "primary_container": "#1f5fbf",
+      "background": "#f8f9ff",
+      "secondary_container": "#d8e3f5",
+      "on_tertiary_fixed": "#301400",
+      "surface_container": "#e5eeff",
+      "on_error": "#ffffff",
+      "tertiary_fixed": "#ffdcc5",
+      "surface_container_lowest": "#ffffff",
+      "surface_bright": "#f8f9ff",
+      "surface": "#f8f9ff",
+      "secondary_fixed": "#d8e3f5"
+    },
+    "designMd": "---\nname: ClearHaul Nav\ncolors:\n  surface: '#f8f9ff'\n  surface-dim: '#d1daeb'\n  surface-bright: '#f8f9ff'\n  surface-container-lowest: '#ffffff'\n  surface-container-low: '#eff4ff'\n  surface-container: '#e5eeff'\n  surface-container-high: '#e0e9f9'\n  surface-container-highest: '#dae3f4'\n  on-surface: '#131c28'\n  on-surface-variant: '#424752'\n  inverse-surface: '#28313d'\n  inverse-on-surface: '#eaf1ff'\n  outline: '#737784'\n  outline-variant: '#c2c6d4'\n  surface-tint: '#185bbb'\n  primary: '#00479c'\n  on-primary: '#ffffff'\n  primary-container: '#1f5fbf'\n  on-primary-container: '#d2deff'\n  inverse-primary: '#aec6ff'\n  secondary: '#545f6e'\n  on-secondary: '#ffffff'\n  secondary-container: '#d8e3f5'\n  on-secondary-container: '#5a6574'\n  tertiary: '#773a00'\n  on-tertiary: '#ffffff'\n  tertiary-container: '#9a4e00'\n  on-tertiary-container: '#ffd7be'\n  error: '#ba1a1a'\n  on-error: '#ffffff'\n  error-container: '#ffdad6'\n  on-error-container: '#93000a'\n  primary-fixed: '#d8e2ff'\n  primary-fixed-dim: '#aec6ff'\n  on-primary-fixed: '#001a42'\n  on-primary-fixed-variant: '#004395'\n  secondary-fixed: '#d8e3f5'\n  secondary-fixed-dim: '#bcc7d9'\n  on-secondary-fixed: '#111c29'\n  on-secondary-fixed-variant: '#3d4856'\n  tertiary-fixed: '#ffdcc5'\n  tertiary-fixed-dim: '#ffb783'\n  on-tertiary-fixed: '#301400'\n  on-tertiary-fixed-variant: '#713700'\n  background: '#f8f9ff'\n  on-background: '#131c28'\n  surface-variant: '#dae3f4'\ntypography:\n  headline-xl:\n    fontFamily: Inter\n    fontSize: 28px\n    fontWeight: '600'\n    lineHeight: 36px\n    letterSpacing: -0.02em\n  headline-xl-mobile:\n    fontFamily: Inter\n    fontSize: 22px\n    fontWeight: '600'\n    lineHeight: 28px\n    letterSpacing: -0.01em\n  headline-lg:\n    fontFamily: Inter\n    fontSize: 24px\n    fontWeight: '600'\n    lineHeight: 32px\n    letterSpacing: -0.015em\n  headline-lg-mobile:\n    fontFamily: Inter\n    fontSize: 20px\n    fontWeight: '600'\n    lineHeight: 26px\n    letterSpacing: -0.01em\n  headline-md:\n    fontFamily: Inter\n    fontSize: 20px\n    fontWeight: '600'\n    lineHeight: 28px\n    letterSpacing: -0.01em\n  headline-sm:\n    fontFamily: Inter\n    fontSize: 18px\n    fontWeight: '600'\n    lineHeight: 24px\n  body-lg:\n    fontFamily: Inter\n    fontSize: 16px\n    fontWeight: '500'\n    lineHeight: 24px\n  body-md:\n    fontFamily: Inter\n    fontSize: 16px\n    fontWeight: '400'\n    lineHeight: 24px\n  body-sm:\n    fontFamily: Inter\n    fontSize: 14px\n    fontWeight: '400'\n    lineHeight: 20px\n  label-lg:\n    fontFamily: Inter\n    fontSize: 14px\n    fontWeight: '600'\n    lineHeight: 20px\n    letterSpacing: 0.01em\n  label-md:\n    fontFamily: Inter\n    fontSize: 12px\n    fontWeight: '600'\n    lineHeight: 16px\n    letterSpacing: 0.02em\n  caption:\n    fontFamily: Inter\n    fontSize: 12px\n    fontWeight: '400'\n    lineHeight: 16px\n  metric-lg:\n    fontFamily: Inter\n    fontSize: 24px\n    fontWeight: '600'\n    lineHeight: 32px\n    letterSpacing: -0.02em\n  metric-md:\n    fontFamily: Inter\n    fontSize: 18px\n    fontWeight: '600'\n    lineHeight: 24px\n  metric-sm:\n    fontFamily: Inter\n    fontSize: 14px\n    fontWeight: '500'\n    lineHeight: 20px\nrounded:\n  sm: 0.25rem\n  DEFAULT: 0.5rem\n  md: 0.75rem\n  lg: 1rem\n  xl: 1.5rem\n  full: 9999px\nspacing:\n  gutter: 1rem\n  gutter-tablet: 1.25rem\n  gutter-desktop: 1.5rem\n  margin: 1rem\n  margin-tablet: 1.5rem\n  margin-desktop: 2rem\n  space-xs: 0.25rem\n  space-sm: 0.5rem\n  space-md: 1rem\n  space-lg: 1.5rem\n  space-xl: 2rem\n---\n\n## Brand & Style\n\nThis design system delivers an austere, mission-critical workspace tailored for long-haul commercial truck operators and freight dispatchers navigating volatile atmospheric conditions. The operational environment is taxing: high-glare daytime cabs, night-shift fatigue, mounting transit deadlines, and safety-critical decisions executed under tight timeframes.\n\nThe aesthetic fuses **Utilitarian Minimalism** with structured **Modern Corporate** clarity. It strips away decorative chrome, playful flourishes, ambient glows, gradients, and illustrative noise in favor of stark legibility, immediate visual triage, and physical predictability. The interface acts as a calibrated cockpit instrument\u2014restrained, precise, and unobtrusive until an environmental hazard demands absolute focus.\n\n## Colors\n\nThe palette operates under a strict rule of functional segregation: semantic risk signals are completely isolated from operational interactive states.\n\n- **Background & Canvas:** `#F7F8FA` creates a low-strain, soft daylight foundation that resists screen glare without inducing the eye fatigue of pure white.\n- **Surfaces & Cards:** Pure `#FFFFFF` elevates content cleanly above the muted grey canvas.\n- **Structural Outlines:** `#E1E5EA` is the sole delineator of physical boundaries across components, inputs, tables, and panels.\n- **Primary Text:** `#1B2430` provides high-contrast, non-glare legibility for route directives and metrics.\n- **Secondary / Supporting Text:** `#5B6675` offers muted contrast for metadata, units, and structural labeling.\n- **Interactive Accent (`#1F5FBF`):** Reserved exclusively for active inputs, focused controls, selection toggles, and primary navigation decisions. Never apply the blue accent to weather or safety signals.\n\n### Risk Status Palette\nThese colors are restricted solely to environmental threats, highway warnings, and safety status indicators. Never employ them for decorative accents or brand styling:\n- **Low Risk (`#2E8B57`):** Clear paths, permissible crosswinds, normal transit conditions.\n- **Moderate Risk (`#E5B800`):** Minor precipitation, caution-level gusts, light congestion.\n- **High Risk (`#E07A1F`):** Freezing rain, chain laws in effect, severe crosswinds affecting high-profile loads.\n- **Severe Risk (`#C62828`):** Blizzards, black ice corridors, structural bridge closures, hail.\n- **No Travel (`#4A0E1A`):** Complete roadway shutdown, mandatory state pull-off orders, catastrophic conditions.\n\n## Typography\n\nThe type hierarchy is powered entirely by **Inter**, leveraging its tall x-height, neutral letterforms, and structural precision for rapid scanning across dash-mounted tablets and mobile cradles.\n\n- **Tabular Numerals Rule:** All tokens tagged with `metric-*`, along with any dynamic numbers (mileage counter, remaining drive hours, ETA clocks, gross vehicle weight ratings, wind vector velocities, surface temperatures), must enforce `font-variant-numeric: tabular-nums`. This prevents layout shifts and misalignments when figures update in real time.\n- **Hierarchy Restraint:** Headings are restrained (capping at 24px\u201328px) to prevent display sprawl and maximize spatial density for maps, routing tables, and corridor telemetry.\n- **Upper-Case Application:** Reserved strictly for short metadata tags and status indicators (`label-md`), paired with gentle letter spacing (`0.02em`) for rapid categorization.\n\n## Layout & Spacing\n\nThe layout utilizes a structured 12-column fluid grid system on desktop, an 8-column layout on tablet, and a 4-column layout on mobile devices.\n\n- **Mobile (< 768px):** 4 columns, 16px margins, 16px gutters. Single-column stacked cards ensure tap targets remain generous during single-handed or in-cab device interaction.\n- **Tablet (768px \u2013 1024px):** 8 columns, 24px margins, 20px gutters. Optimized for horizontal vehicle dashboard docks, accommodating a split-screen viewport (e.g., 5 columns map, 3 columns corridor alert feed).\n- **Desktop (> 1024px):** 12 columns, 32px margins, 24px gutters. Provides structured enterprise multi-panel dispatch screens.\n- **Rhythm & Proportions:** Vertical stacks strictly adhere to multiples of 8px. Spacing between distinct operational panels relies on `space-lg` (24px), while internal card groupings leverage `space-md` (16px) and atomic pairings rely on `space-xs` (4px) or `space-sm` (8px).\n\n## Elevation & Depth\n\nThis system intentionally rejects skeuomorphic drop shadows, heavy layered blurs, and floating elevations. The operating aesthetic is flat, low-contrast, and strictly architectural.\n\n- **Boundary-Driven Surfaces:** Cards, panels, bottom sheets, and top bars rely on a crisp `1px solid #E1E5EA` border to establish structure against `#F7F8FA`.\n- **Zero Cast Shadows:** Elevation levels (`0dp` through `24dp`) are collapsed. Cards rest flush on the background without drop shadows.\n- **Modal & Popover Separation:** When a temporary layer (such as an emergency reroute dialog or weigh-station warning) must superimpose over active navigation, it utilizes an opaque `#FFFFFF` background enclosed by a `1px solid #1B2430` perimeter, backed by a subtle `rgba(27, 36, 48, 0.4)` scrim. No blurred glass effects or ambient tinted shadows are permitted.\n\n## Shapes\n\nThe design system standardizes on a calibrated **8px (`0.5rem`)** corner radius across standard UI elements (inputs, buttons, cards, status pills, and tables), representing level `2`.\n\n- **Standard Components:** 8px radius on cards, modal frames, inputs, and operational buttons. This provides subtle ergonomic softness while maintaining a crisp, architectural silhouette.\n- **Compound Components:** Segmented route-toggles and nested split-buttons keep outer 8px perimeters, with interior adjacent corners squared to maintain monolithic form.\n- **Strict Exception for Status Badges:** Risk and status indicators use a full pill radius (9999px) to distinctly contrast against the rectangular grid of data cards and form fields.\n\n## Components\n\n### Buttons\n- **Touch Target:** Mandatory 48px height across all button tiers to ensure ease of tapping under vibration or while wearing work gloves.\n- **Primary Action:** Solid `#1F5FBF` fill, white `#FFFFFF` text (`label-lg`), 8px border-radius, zero shadow. Active tap state: `#174A96`.\n- **Secondary Action:** Transparent or `#FFFFFF` fill with `1px solid #E1E5EA` border, `#1B2430` text. Hover/tap state: `#F7F8FA`.\n- **Destructive / Abort Action:** Transparent fill, `1px solid #C62828`, text `#C62828`. No solid red buttons unless confirming an irreversible route cancellation.\n\n### Input Fields\n- **Height & Spacing:** 48px field height, 16px horizontal internal padding (`space-md`).\n- **Typography:** 16px body text (`#1B2430`) to avoid mobile browser auto-zoom. Placeholders set in `#5B6675`.\n- **Labels:** Positioned cleanly above the input field (never floating or disappearing inside). Text style: `label-lg` in `#1B2430`, with a 4px gap to the input box.\n- **Borders & Focus:** Default border `1px solid #E1E5EA`. Focused state transitions to `1px solid #1F5FBF` accompanied by an unblurred `2px` calm focus ring in `#1F5FBF` with zero offset.\n\n### Risk Badges & Banners\n- **Multimodal Identification:** Risk levels must never rely solely on color. Every badge must feature:\n  1. A colored shape or icon (e.g., solid 6px dot or standardized SVG hazard glyph).\n  2. The explicit textual risk tier (e.g., \"HIGH RISK\").\n  3. A tinted light background surface corresponding to the risk color family at 10% opacity, framed by a `1px solid` border tinted at 25% opacity.\n- **Execution:** Full pill radius (`rounded-full`), `space-xs` vertical padding, `space-sm` horizontal padding, paired with `label-md` uppercase text.\n\n### Cards & Route Tiles\n- **Structure:** Solid `#FFFFFF` fill, `1px solid #E1E5EA` outer perimeter, 8px radius, `space-md` (16px) internal padding.\n- **Data Sections:** Separated internally with horizontal `1px solid #E1E5EA` hairline dividers rather than elevated containers.\n- **Selected State:** Active/chosen route card swaps its default perimeter to a `2px solid #1F5FBF` border with no background shift.\n\n### Checkboxes & Radio Controls\n- **Size:** 20px x 20px hit marker centered within a 48px interactive target container.\n- **Appearance:** 1px solid `#E1E5EA` unchecked border, switching to solid `#1F5FBF` fill with a crisp white checkmark/dot when active.\n\n### Corridor Hazard List Items\n- **Structure:** Flush full-width or card-bound lists. Height minimum 64px for one-touch acknowledgement.\n- **Visuals:** Left border accent line (4px width) rendered in the respective Risk Status Color (e.g., `#E07A1F` for High Risk crosswinds), ensuring immediate peripheral detection along route timelines.",
+    "colorVariant": "FIDELITY",
+    "overridePrimaryColor": "#1f5fbf",
+    "overrideSecondaryColor": "#5b6675",
+    "overrideTertiaryColor": "#e07a1f",
+    "overrideNeutralColor": "#1b2430",
+    "spacingScale": 2,
+    "typography": {
+      "headline-xl": {
+        "fontFamily": "Inter",
+        "fontSize": "28px",
+        "fontWeight": "600",
+        "lineHeight": "36px",
+        "letterSpacing": "-0.02em"
+      },
+      "metric-md": {
+        "fontFamily": "Inter",
+        "fontSize": "18px",
+        "fontWeight": "600",
+        "lineHeight": "24px"
+      },
+      "label-md": {
+        "fontFamily": "Inter",
+        "fontSize": "12px",
+        "fontWeight": "600",
+        "lineHeight": "16px",
+        "letterSpacing": "0.02em"
+      },
+      "headline-lg-mobile": {
+        "fontFamily": "Inter",
+        "fontSize": "20px",
+        "fontWeight": "600",
+        "lineHeight": "26px",
+        "letterSpacing": "-0.01em"
+      },
+      "headline-xl-mobile": {
+        "fontFamily": "Inter",
+        "fontSize": "22px",
+        "fontWeight": "600",
+        "lineHeight": "28px",
+        "letterSpacing": "-0.01em"
+      },
+      "label-lg": {
+        "fontFamily": "Inter",
+        "fontSize": "14px",
+        "fontWeight": "600",
+        "lineHeight": "20px",
+        "letterSpacing": "0.01em"
+      },
+      "body-lg": {
+        "fontFamily": "Inter",
+        "fontSize": "16px",
+        "fontWeight": "500",
+        "lineHeight": "24px"
+      },
+      "body-sm": {
+        "fontFamily": "Inter",
+        "fontSize": "14px",
+        "fontWeight": "400",
+        "lineHeight": "20px"
+      },
+      "metric-lg": {
+        "fontFamily": "Inter",
+        "fontSize": "24px",
+        "fontWeight": "600",
+        "lineHeight": "32px",
+        "letterSpacing": "-0.02em"
+      },
+      "caption": {
+        "fontFamily": "Inter",
+        "fontSize": "12px",
+        "fontWeight": "400",
+        "lineHeight": "16px"
+      },
+      "headline-sm": {
+        "fontFamily": "Inter",
+        "fontSize": "18px",
+        "fontWeight": "600",
+        "lineHeight": "24px"
+      },
+      "body-md": {
+        "fontFamily": "Inter",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "lineHeight": "24px"
+      },
+      "metric-sm": {
+        "fontFamily": "Inter",
+        "fontSize": "14px",
+        "fontWeight": "500",
+        "lineHeight": "20px"
+      },
+      "headline-md": {
+        "fontFamily": "Inter",
+        "fontSize": "20px",
+        "fontWeight": "600",
+        "lineHeight": "28px",
+        "letterSpacing": "-0.01em"
+      },
+      "headline-lg": {
+        "fontFamily": "Inter",
+        "fontSize": "24px",
+        "fontWeight": "600",
+        "lineHeight": "32px",
+        "letterSpacing": "-0.015em"
+      }
+    },
+    "spacing": {
+      "gutter-tablet": "1.25rem",
+      "space-sm": "0.5rem",
+      "margin": "1rem",
+      "gutter": "1rem",
+      "space-xs": "0.25rem",
+      "margin-tablet": "1.5rem",
+      "space-xl": "2rem",
+      "margin-desktop": "2rem",
+      "space-lg": "1.5rem",
+      "gutter-desktop": "1.5rem",
+      "space-md": "1rem"
+    },
+    "headlineFontFamily": "Inter",
+    "bodyFontFamily": "Inter",
+    "labelFontFamily": "Inter"
+  },
+  "screenInstances": [
+    {
+      "id": "07988f2a69164c26a614af87b284ef2d",
+      "sourceScreen": "projects/5209370090189557357/screens/07988f2a69164c26a614af87b284ef2d",
+      "x": 2368,
+      "width": 1280,
+      "height": 1526,
+      "label": "Weather Heatmap"
+    },
+    {
+      "id": "5ffcf9f88fd144cfa279cbd1f86f4aa2",
+      "sourceScreen": "projects/5209370090189557357/screens/5ffcf9f88fd144cfa279cbd1f86f4aa2",
+      "y": 3218,
+      "width": 1280,
+      "height": 1024,
+      "label": "Weather Heatmap"
+    },
+    {
+      "id": "8191a623ac354952a8366ff400da2c29",
+      "sourceScreen": "projects/5209370090189557357/screens/8191a623ac354952a8366ff400da2c29",
+      "x": 1024,
+      "width": 1280,
+      "height": 1232,
+      "label": "Route Results"
+    },
+    {
+      "id": "assets_2d8d9cf2aac14df0afca81f73dc1965d",
+      "width": 960,
+      "height": 540,
+      "sourceAsset": "assets/2d8d9cf2aac14df0afca81f73dc1965d",
+      "type": "DESIGN_SYSTEM_INSTANCE"
+    },
+    {
+      "id": "bc727905f938489885292c5887c3aa4b",
+      "sourceScreen": "projects/5209370090189557357/screens/bc727905f938489885292c5887c3aa4b",
+      "x": 3712,
+      "width": 1280,
+      "height": 1024,
+      "label": "Trip Details"
+    },
+    {
+      "id": "df57dface40f461e9db39d6d5958f02b",
+      "sourceScreen": "projects/5209370090189557357/screens/df57dface40f461e9db39d6d5958f02b",
+      "y": 1782,
+      "width": 1280,
+      "height": 1180,
+      "label": "Route Results"
+    }
+  ],
+  "metadata": {
+    "userRole": "READER"
+  },
+  "sharingSettings": {
+    "accessType": "ANYONE",
+    "generalAccessRole": "READER"
+  }
+}
