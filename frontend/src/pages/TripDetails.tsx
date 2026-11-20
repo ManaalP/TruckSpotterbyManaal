@@ -102,11 +102,28 @@ export const TripDetails: React.FC = () => {
 
   const validate = (): boolean => {
     const errs: Record<string, string> = {}
-    if (!originQuery.trim()) errs.origin = 'Origin location is required.'
-    if (!destinationQuery.trim()) errs.destination = 'Destination location is required.'
-    if (!departureTime) errs.departureTime = 'Departure date and time is required.'
-    if (!loadWeight || loadWeight <= 0) errs.loadWeight = 'Valid load weight (lb) is required.'
-    if (loadWeight > 100000) errs.loadWeight = 'Load weight cannot exceed 100,000 lb.'
+    if (!originQuery.trim()) {
+      errs.origin = 'Please enter an origin city, state, or logistics hub.'
+    }
+    if (!destinationQuery.trim()) {
+      errs.destination = 'Please enter a destination city, state, or logistics hub.'
+    }
+    if (originQuery.trim() && destinationQuery.trim() && originQuery.trim().toLowerCase() === destinationQuery.trim().toLowerCase()) {
+      errs.destination = 'Origin and destination must be different locations.'
+    }
+    if (!departureTime) {
+      errs.departureTime = 'Please select a scheduled departure date and time.'
+    } else {
+      const depDate = new Date(departureTime)
+      if (isNaN(depDate.getTime())) {
+        errs.departureTime = 'Please provide a valid departure date and time.'
+      }
+    }
+    if (!loadWeight || isNaN(loadWeight) || loadWeight < 1000) {
+      errs.loadWeight = 'Cargo load weight must be at least 1,000 lb (standard freight threshold).'
+    } else if (loadWeight > 90000) {
+      errs.loadWeight = 'Cargo load weight cannot exceed 90,000 lb (max highway permit limit).'
+    }
     setErrors(errs)
     return Object.keys(errs).length === 0
   }
@@ -308,28 +325,69 @@ export const TripDetails: React.FC = () => {
             </div>
           </div>
 
-          {/* Cargo Load Weight (Clean Left Icon, No overlap with spinner) */}
+          {/* Cargo Load Weight with Dynamic Interactive Slider & Presets */}
           <div>
-            <label className="block text-xs font-semibold text-text-primary mb-1">
-              Cargo Load Weight (lb)
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Weight size={16} className="text-text-muted" />
-              </div>
-              <input
-                type="number"
-                value={loadWeight || ''}
-                onChange={(e) => setLoadWeight(Number(e.target.value))}
-                placeholder="e.g. 38000"
-                step="500"
-                min="0"
-                max="100000"
-                className="w-full h-11 pl-9 pr-3 border border-border rounded text-sm text-text-primary focus:outline-none focus:border-primary tabular-nums"
-              />
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-semibold text-text-primary flex items-center gap-1.5">
+                <Weight size={14} className="text-primary" />
+                <span>Cargo Load Weight</span>
+              </label>
+              <span className="text-xs font-bold text-primary tabular-nums">
+                {Number(loadWeight || 0).toLocaleString()} lb
+                <span className="text-[10px] font-normal text-text-muted ml-1">
+                  ({loadWeight < 30000 ? 'Light/Empty' : loadWeight <= 40000 ? 'Standard Load' : 'Heavy Load'})
+                </span>
+              </span>
             </div>
+
+            {/* Slider with visual load brackets */}
+            <div className="space-y-1.5">
+              <input
+                type="range"
+                min="5000"
+                max="80000"
+                step="1000"
+                value={loadWeight || 38000}
+                onChange={(e) => setLoadWeight(Number(e.target.value))}
+                className="w-full h-2 bg-border rounded-lg appearance-none cursor-pointer accent-primary"
+              />
+              <div className="flex justify-between text-[10px] text-text-muted px-0.5">
+                <span>5k lb (Empty)</span>
+                <span>30k lb (No-Travel Wind Threshold)</span>
+                <span>40k lb (Severe Wind Threshold)</span>
+                <span>80k lb (Max GCW)</span>
+              </div>
+            </div>
+
+            {/* Quick-Pick Weight Presets */}
+            <div className="flex items-center gap-2 mt-2">
+              <span className="text-[10px] text-text-muted font-medium">Quick Presets:</span>
+              {[
+                { label: 'Empty (15k)', weight: 15000 },
+                { label: 'Mid-Weight (32k)', weight: 32000 },
+                { label: 'Standard (38k)', weight: 38000 },
+                { label: 'Max Legal (45k)', weight: 45000 },
+              ].map((preset) => (
+                <button
+                  key={preset.weight}
+                  type="button"
+                  onClick={() => setLoadWeight(preset.weight)}
+                  className={`text-[10px] font-semibold px-2 py-0.5 rounded border transition ${
+                    loadWeight === preset.weight
+                      ? 'bg-primary text-white border-primary shadow-xs'
+                      : 'border-border bg-background text-text-muted hover:text-text-primary hover:bg-surface'
+                  }`}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+
             {errors.loadWeight && (
-              <p className="text-xs text-risk-severe mt-1">{errors.loadWeight}</p>
+              <p className="text-xs text-risk-severe mt-1.5 flex items-center gap-1">
+                <AlertCircle size={12} />
+                <span>{errors.loadWeight}</span>
+              </p>
             )}
           </div>
 

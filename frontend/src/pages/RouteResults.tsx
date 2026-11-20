@@ -320,19 +320,33 @@ export const RouteResults: React.FC = () => {
               </select>
             </div>
 
-            {/* Weight Input */}
-            <div className="flex items-center gap-1.5 h-9 px-2.5 rounded border border-border bg-background w-28">
+            {/* Weight Input with Slider Popover or Quick Increment */}
+            <div className="flex items-center gap-2 h-9 px-2.5 rounded border border-border bg-background">
               <Weight size={13} className="text-text-muted flex-shrink-0" />
               <input
-                type="number"
-                value={loadWeight || ''}
-                step="500"
-                min="0"
+                type="range"
+                min="5000"
+                max="80000"
+                step="1000"
+                value={loadWeight || 38000}
                 onChange={(e) => {
                   setLoadWeight(Number(e.target.value))
                   setIsEditingBar(true)
                 }}
-                className="w-full bg-transparent text-xs font-semibold text-text-primary focus:outline-none tabular-nums"
+                className="w-16 h-1.5 bg-border rounded cursor-pointer accent-primary hidden sm:block"
+                title="Slide to adjust weight"
+              />
+              <input
+                type="number"
+                value={loadWeight || ''}
+                step="500"
+                min="1000"
+                max="90000"
+                onChange={(e) => {
+                  setLoadWeight(Number(e.target.value))
+                  setIsEditingBar(true)
+                }}
+                className="w-16 bg-transparent text-xs font-semibold text-text-primary focus:outline-none tabular-nums text-right"
                 title="Cargo weight in pounds"
               />
               <span className="text-[10px] text-text-muted font-bold">LB</span>

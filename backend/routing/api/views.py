@@ -56,9 +56,13 @@ def analyze_routes_view(request):
     """POST /api/routes/analyze"""
     serializer = RouteAnalyzeSerializer(data=request.data)
     if not serializer.is_valid():
+        first_err = "Invalid input parameters."
+        if serializer.errors:
+            field, msgs = next(iter(serializer.errors.items()))
+            first_err = f"{field.replace('_', ' ').capitalize()}: {msgs[0]}"
         return error_response(
             "VALIDATION_ERROR",
-            "Please check the submitted route and load parameters.",
+            first_err,
             serializer.errors,
         )
 
