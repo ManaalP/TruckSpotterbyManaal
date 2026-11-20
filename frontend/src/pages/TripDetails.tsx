@@ -156,38 +156,53 @@ export const TripDetails: React.FC = () => {
   const activeTzObj = US_TIMEZONES.find((z) => z.id === selectedTimeZone) || US_TIMEZONES[0]
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative">
-      {/* Full-Screen Loading Overlay with Truck on Road Animation */}
-      {isLoading && (
-        <div className="absolute inset-0 z-50 bg-background/80 backdrop-blur-xs flex items-center justify-center p-4">
-          <TruckLoader
-            message="Calculating Weather-Aware Routes..."
-            subMessage={`Evaluating corridors and crosswinds in ${activeTzObj.label}`}
-          />
+    <div className="min-h-screen bg-background flex flex-col relative">
+      {/* Top Application Header with Brand & Theme Toggle */}
+      <header className="border-b border-border bg-surface px-6 py-3 flex items-center justify-between z-20 shadow-xs">
+        <div className="flex items-center gap-2.5">
+          <span className="w-3.5 h-3.5 rounded-full bg-primary" />
+          <span className="text-sm font-bold text-text-primary tracking-tight">TruckSpotter AI</span>
         </div>
-      )}
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-background text-text-primary hover:bg-surface transition-colors text-xs font-semibold"
+          title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+        >
+          {theme === 'dark' ? (
+            <>
+              <Sun size={14} className="text-amber-400" />
+              <span>Light Mode</span>
+            </>
+          ) : (
+            <>
+              <Moon size={14} className="text-slate-600" />
+              <span>Dark Mode</span>
+            </>
+          )}
+        </button>
+      </header>
 
-      {/* Centered Form Card (Stitch Visual Specification) */}
-      <div className="w-full max-w-lg bg-surface rounded-xl border border-border p-6 shadow-sm relative z-10">
-        <div className="mb-6 flex items-start justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="w-3 h-3 rounded-full bg-primary" />
-              <h1 className="text-xl font-bold text-text-primary tracking-tight">Trip Details</h1>
-            </div>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col items-center justify-center p-4">
+        {/* Full-Screen Loading Overlay with Truck on Road Animation */}
+        {isLoading && (
+          <div className="absolute inset-0 z-50 bg-background/80 backdrop-blur-xs flex items-center justify-center p-4">
+            <TruckLoader
+              message="Calculating Weather-Aware Routes..."
+              subMessage={`Evaluating corridors and crosswinds in ${activeTzObj.label}`}
+            />
+          </div>
+        )}
+
+        {/* Centered Form Card (Stitch Visual Specification) */}
+        <div className="w-full max-w-lg bg-surface rounded-xl border border-border p-6 shadow-sm relative z-10">
+          <div className="mb-6">
+            <h1 className="text-xl font-bold text-text-primary tracking-tight mb-1">Trip Details</h1>
             <p className="text-xs text-text-muted leading-relaxed">
               Configure origin, destination, departure time, and cargo weight to calculate weather-safe truck routes.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="p-2 rounded-lg border border-border bg-background text-text-primary hover:bg-surface transition-colors"
-            title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-          >
-            {theme === 'dark' ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} className="text-slate-600" />}
-          </button>
-        </div>
 
         {errors.form && (
           <div className="mb-4 p-3 rounded bg-red-50 border border-red-200 text-xs text-risk-severe flex items-center gap-2">
@@ -430,5 +445,6 @@ export const TripDetails: React.FC = () => {
         </form>
       </div>
     </div>
+  </div>
   )
 }

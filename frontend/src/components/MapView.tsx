@@ -3,7 +3,6 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import type { RouteOption, HeatmapPoint } from '../api/types'
 import { RISK_COLORS } from '../lib/risk'
-import { useTheme } from '../lib/theme'
 
 interface MapViewProps {
   routes: RouteOption[]
@@ -15,9 +14,8 @@ interface MapViewProps {
   heatmapMode?: 'risk' | 'wind' | 'rain' | 'snow'
 }
 
-// 100% Free Carto basemaps: Voyager (light) and Dark Matter (dark) with OSM fallback
-const CARTO_LIGHT_TILES = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
-const CARTO_DARK_TILES = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+// 100% Free Public Standard OpenStreetMap Global Tiles (No API key, No usage limits)
+const OSM_TILES_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
 
 function getBearingDegrees(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const dLon = ((lon2 - lon1) * Math.PI) / 180
@@ -53,7 +51,6 @@ export const MapView: React.FC<MapViewProps> = ({
   heatmapPoints,
   heatmapMode = 'risk',
 }) => {
-  const { theme } = useTheme()
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
   const tileLayerRef = useRef<L.TileLayer | null>(null)
@@ -71,11 +68,9 @@ export const MapView: React.FC<MapViewProps> = ({
       preferCanvas: true,
     })
 
-    const tileUrl = theme === 'dark' ? CARTO_DARK_TILES : CARTO_LIGHT_TILES
-    const tileLayer = L.tileLayer(tileUrl, {
+    const tileLayer = L.tileLayer(OSM_TILES_URL, {
       maxZoom: 19,
-      subdomains: 'abcd',
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map)
     tileLayerRef.current = tileLayer
 
@@ -97,13 +92,6 @@ export const MapView: React.FC<MapViewProps> = ({
       heatmapGroupRef.current = null
     }
   }, [])
-
-  // Switch tile layer seamlessly on theme toggle
-  useEffect(() => {
-    if (!mapRef.current || !tileLayerRef.current) return
-    const newUrl = theme === 'dark' ? CARTO_DARK_TILES : CARTO_LIGHT_TILES
-    tileLayerRef.current.setUrl(newUrl)
-  }, [theme])
 
   // Auto-resize map when taskbar opens/closes
   useEffect(() => {
