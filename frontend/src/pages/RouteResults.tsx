@@ -87,6 +87,7 @@ export const RouteResults: React.FC = () => {
         if (parsed.recommendation?.route_id) {
           setSelectedRouteId(parsed.recommendation.route_id)
         }
+        setIsLoading(false)
         loadCorridorHeatmap(parsed)
         return
       } catch (_) {}
