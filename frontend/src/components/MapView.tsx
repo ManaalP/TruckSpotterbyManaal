@@ -12,6 +12,9 @@ interface MapViewProps {
   isHeatmapOpen?: boolean
 }
 
+// 100% Free OpenStreetMap Global Tile Service (reliable worldwide, free, zero keys needed)
+const OSM_TILES_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+
 export const MapView: React.FC<MapViewProps> = ({
   routes,
   selectedRouteId,
@@ -23,22 +26,21 @@ export const MapView: React.FC<MapViewProps> = ({
   const mapRef = useRef<L.Map | null>(null)
   const layersGroupRef = useRef<L.FeatureGroup | null>(null)
 
-  // Initialize ultra-light Leaflet map
+  // Initialize Free Leaflet map with standard OpenStreetMap tiles
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return
 
-    // Clean lightweight raster basemap from Carto Positron (fast, high-availability, instant caching)
     const map = L.map(mapContainerRef.current, {
       center: [39.8283, -98.5795],
       zoom: 4,
       zoomControl: true,
-      preferCanvas: true, // Use HTML5 Canvas for zero-lag polyline & circle rendering
+      preferCanvas: true,
     })
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
-      subdomains: 'abcd',
+    // Standard OpenStreetMap public tile layer
+    L.tileLayer(OSM_TILES_URL, {
       maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map)
 
     const layersGroup = L.featureGroup().addTo(map)
@@ -52,7 +54,7 @@ export const MapView: React.FC<MapViewProps> = ({
     }
   }, [])
 
-  // Auto-resize smoothly when sidebar opens or closes
+  // Auto-resize map when taskbar opens/closes
   useEffect(() => {
     if (mapRef.current) {
       setTimeout(() => {
@@ -61,7 +63,7 @@ export const MapView: React.FC<MapViewProps> = ({
     }
   }, [isHeatmapOpen])
 
-  // Fast rendering of routes and checkpoints
+  // Draw routes and checkpoints
   useEffect(() => {
     const map = mapRef.current
     const group = layersGroupRef.current
@@ -69,7 +71,7 @@ export const MapView: React.FC<MapViewProps> = ({
 
     group.clearLayers()
 
-    // 1. Inactive routes (rendered as background muted polylines)
+    // 1. Inactive alternative routes (muted grey lines)
     routes
       .filter((r) => r.id !== selectedRouteId)
       .forEach((r) => {
@@ -79,9 +81,9 @@ export const MapView: React.FC<MapViewProps> = ({
         ])
         if (latlngs.length > 1) {
           L.polyline(latlngs, {
-            color: '#94A3B8',
-            weight: 3.5,
-            opacity: 0.55,
+            color: '#64748B',
+            weight: 4,
+            opacity: 0.6,
             lineCap: 'round',
             lineJoin: 'round',
           }).addTo(group)
@@ -96,7 +98,7 @@ export const MapView: React.FC<MapViewProps> = ({
         const color = (RISK_COLORS as any)[seg.risk_level]?.hex || '#2E8B57'
         L.polyline(segLatLngs, {
           color,
-          weight: 6,
+          weight: 6.5,
           opacity: 0.95,
           lineCap: 'round',
           lineJoin: 'round',
@@ -109,7 +111,7 @@ export const MapView: React.FC<MapViewProps> = ({
         const color = (RISK_COLORS as any)[cp.risk_level]?.hex || '#2E8B57'
 
         const marker = L.circleMarker([cp.lat, cp.lon], {
-          radius: isSelected ? 8 : 5,
+          radius: isSelected ? 8.5 : 5.5,
           fillColor: color,
           color: '#FFFFFF',
           weight: isSelected ? 3 : 2,
@@ -137,7 +139,7 @@ export const MapView: React.FC<MapViewProps> = ({
       ])
       if (activeCoords.length > 1) {
         map.fitBounds(L.latLngBounds(activeCoords), {
-          padding: [40, 40],
+          padding: [45, 45],
           animate: true,
           duration: 0.5,
         })

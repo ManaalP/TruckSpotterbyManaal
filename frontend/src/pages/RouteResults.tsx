@@ -476,14 +476,7 @@ export const RouteResults: React.FC = () => {
                 </div>
               )}
             </>
-          ) : (
-            <div className="flex flex-col items-center justify-center p-8 text-center text-text-muted">
-              <TruckLoader
-                message="Loading Routes..."
-                subMessage="Preparing commercial freight corridor analysis"
-              />
-            </div>
-          )}
+          ) : null}
         </div>
 
         {/* Center: Map Area */}
