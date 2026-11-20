@@ -2,21 +2,42 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { searchGeocode, analyzeRoutes } from '../api/client'
 import type { PlaceResult } from '../api/types'
-import { Navigation, Weight, Sliders, AlertCircle, Loader2 } from 'lucide-react'
+import { TruckLoader } from '../components/TruckLoader'
+import {
+  US_TIMEZONES,
+  type USTimeZone,
+  getLocalInputStringForTimeZone,
+  parseLocalInputToUTCISO,
+} from '../lib/timezone'
+import {
+  Navigation,
+  Weight,
+  Sliders,
+  AlertCircle,
+  Globe,
+  ArrowRight
+} from 'lucide-react'
+
+const DEFAULT_ORIGIN = 'Chicago, IL'
+const DEFAULT_DESTINATION = 'Denver, CO'
+const DEFAULT_WEIGHT = 38000
+const DEFAULT_INTERVAL = 25
+const DEFAULT_TIMEZONE: USTimeZone = 'America/Chicago' // Central Time (CT)
 
 export const TripDetails: React.FC = () => {
   const navigate = useNavigate()
 
-  // Form inputs
-  const [originQuery, setOriginQuery] = useState('Chicago, IL')
-  const [destinationQuery, setDestinationQuery] = useState('Denver, CO')
+  // Form inputs with prefilled defaults matching Stitch Spec
+  const [originQuery, setOriginQuery] = useState(DEFAULT_ORIGIN)
+  const [destinationQuery, setDestinationQuery] = useState(DEFAULT_DESTINATION)
+  const [selectedTimeZone, setSelectedTimeZone] = useState<USTimeZone>(DEFAULT_TIMEZONE)
+
   const [departureTime, setDepartureTime] = useState(() => {
-    const d = new Date()
-    d.setMinutes(d.getMinutes() - d.getTimezoneOffset())
-    return d.toISOString().slice(0, 16)
+    return getLocalInputStringForTimeZone(new Date(), DEFAULT_TIMEZONE)
   })
-  const [loadWeight, setLoadWeight] = useState<number>(38000)
-  const [intervalMiles, setIntervalMiles] = useState<number>(25)
+
+  const [loadWeight, setLoadWeight] = useState<number>(DEFAULT_WEIGHT)
+  const [intervalMiles, setIntervalMiles] = useState<number>(DEFAULT_INTERVAL)
 
   // Autocomplete states & focus tracking
   const [originSuggestions, setOriginSuggestions] = useState<PlaceResult[]>([])
@@ -27,7 +48,6 @@ export const TripDetails: React.FC = () => {
   // Submission & Validation states
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(false)
-  const [loadingStep, setLoadingStep] = useState('')
 
   const originContainerRef = useRef<HTMLDivElement>(null)
   const destContainerRef = useRef<HTMLDivElement>(null)
@@ -57,7 +77,7 @@ export const TripDetails: React.FC = () => {
         const res = await searchGeocode(originQuery)
         setOriginSuggestions(res)
       } catch (err) {}
-    }, 250)
+    }, 200)
     return () => clearTimeout(timer)
   }, [originQuery])
 
@@ -72,7 +92,7 @@ export const TripDetails: React.FC = () => {
         const res = await searchGeocode(destinationQuery)
         setDestSuggestions(res)
       } catch (err) {}
-    }, 250)
+    }, 200)
     return () => clearTimeout(timer)
   }, [destinationQuery])
 
@@ -92,16 +112,12 @@ export const TripDetails: React.FC = () => {
     if (!validate()) return
 
     setIsLoading(true)
-    setLoadingStep('Finding optimal routes...')
-
     try {
-      setTimeout(() => setLoadingStep('Sampling weather along corridor...'), 800)
-      setTimeout(() => setLoadingStep('Applying truck load risk rules...'), 1600)
-
+      const utcDeparture = parseLocalInputToUTCISO(departureTime, selectedTimeZone)
       const payload = {
         origin: originQuery,
         destination: destinationQuery,
-        departure_time: new Date(departureTime).toISOString(),
+        departure_time: utcDeparture,
         load_weight_lb: Number(loadWeight),
         interval_miles: intervalMiles,
       }
@@ -113,20 +129,32 @@ export const TripDetails: React.FC = () => {
       setErrors({ form: err.message || 'Error calculating routes. Please try again.' })
     } finally {
       setIsLoading(false)
-      setLoadingStep('')
     }
   }
 
+  const activeTzObj = US_TIMEZONES.find((z) => z.id === selectedTimeZone) || US_TIMEZONES[0]
+
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-lg bg-surface rounded-lg border border-border p-6 shadow-sm">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative">
+      {/* Full-Screen Loading Overlay with Truck on Road Animation */}
+      {isLoading && (
+        <div className="absolute inset-0 z-50 bg-background/80 backdrop-blur-xs flex items-center justify-center p-4">
+          <TruckLoader
+            message="Calculating Weather-Aware Routes..."
+            subMessage={`Evaluating corridors and crosswinds in ${activeTzObj.label}`}
+          />
+        </div>
+      )}
+
+      {/* Centered Form Card (Stitch Visual Specification) */}
+      <div className="w-full max-w-lg bg-surface rounded-xl border border-border p-6 shadow-sm relative z-10">
         <div className="mb-6">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1.5">
             <span className="w-3 h-3 rounded-full bg-primary" />
-            <h1 className="text-xl font-bold text-text-primary">Trip Details</h1>
+            <h1 className="text-xl font-bold text-text-primary tracking-tight">Trip Details</h1>
           </div>
-          <p className="text-xs text-text-muted">
-            Enter origin, destination, load weight, and departure time for weather-risk analysis.
+          <p className="text-xs text-text-muted leading-relaxed">
+            Configure origin, destination, departure time, and cargo weight to calculate weather-safe truck routes.
           </p>
         </div>
 
@@ -152,7 +180,7 @@ export const TripDetails: React.FC = () => {
                   setOriginQuery(e.target.value)
                   setShowOriginMenu(true)
                 }}
-                placeholder="Type city or freight hub (e.g. Chicago, IL)"
+                placeholder="City or logistics hub (e.g. Chicago, IL)"
                 className={`w-full h-11 pl-3 pr-10 border rounded text-sm text-text-primary focus:outline-none focus:border-primary ${
                   errors.origin ? 'border-risk-severe' : 'border-border'
                 }`}
@@ -195,7 +223,7 @@ export const TripDetails: React.FC = () => {
                   setDestinationQuery(e.target.value)
                   setShowDestMenu(true)
                 }}
-                placeholder="Type city or freight hub (e.g. Denver, CO)"
+                placeholder="City or logistics hub (e.g. Denver, CO)"
                 className={`w-full h-11 pl-3 pr-10 border rounded text-sm text-text-primary focus:outline-none focus:border-primary ${
                   errors.destination ? 'border-risk-severe' : 'border-border'
                 }`}
@@ -226,8 +254,8 @@ export const TripDetails: React.FC = () => {
             )}
           </div>
 
-          {/* Grid row: Departure & Weight */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Departure Date/Time & USA Timezone */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-text-primary mb-1">
                 Departure Time
@@ -245,33 +273,53 @@ export const TripDetails: React.FC = () => {
               )}
             </div>
 
-            {/* Cargo Load Weight with Clean Left-Aligned Icon to avoid spinner overlapping */}
             <div>
               <label className="block text-xs font-semibold text-text-primary mb-1">
-                Cargo Load Weight (lb)
+                USA Timezone
               </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Weight size={16} className="text-text-muted" />
-                </div>
-                <input
-                  type="number"
-                  value={loadWeight || ''}
-                  onChange={(e) => setLoadWeight(Number(e.target.value))}
-                  placeholder="e.g. 38000"
-                  step="500"
-                  min="0"
-                  max="100000"
-                  className="w-full h-11 pl-9 pr-3 border border-border rounded text-sm text-text-primary focus:outline-none focus:border-primary tabular-nums"
-                />
+              <div className="relative flex items-center border border-border rounded h-11 px-3 bg-surface focus-within:border-primary">
+                <Globe size={15} className="text-primary mr-2 flex-shrink-0" />
+                <select
+                  value={selectedTimeZone}
+                  onChange={(e) => setSelectedTimeZone(e.target.value as USTimeZone)}
+                  className="w-full bg-transparent text-sm font-semibold text-text-primary focus:outline-none cursor-pointer"
+                >
+                  {US_TIMEZONES.map((tz) => (
+                    <option key={tz.id} value={tz.id}>
+                      {tz.label}
+                    </option>
+                  ))}
+                </select>
               </div>
-              {errors.loadWeight && (
-                <p className="text-xs text-risk-severe mt-1">{errors.loadWeight}</p>
-              )}
             </div>
           </div>
 
-          {/* Sampling Interval Selector */}
+          {/* Cargo Load Weight (Clean Left Icon, No overlap with spinner) */}
+          <div>
+            <label className="block text-xs font-semibold text-text-primary mb-1">
+              Cargo Load Weight (lb)
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Weight size={16} className="text-text-muted" />
+              </div>
+              <input
+                type="number"
+                value={loadWeight || ''}
+                onChange={(e) => setLoadWeight(Number(e.target.value))}
+                placeholder="e.g. 38000"
+                step="500"
+                min="0"
+                max="100000"
+                className="w-full h-11 pl-9 pr-3 border border-border rounded text-sm text-text-primary focus:outline-none focus:border-primary tabular-nums"
+              />
+            </div>
+            {errors.loadWeight && (
+              <p className="text-xs text-risk-severe mt-1">{errors.loadWeight}</p>
+            )}
+          </div>
+
+          {/* Weather Sampling Interval Selector (Advanced Segmented Control) */}
           <div className="pt-2 border-t border-border">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-semibold text-text-primary flex items-center gap-1.5">
@@ -288,7 +336,7 @@ export const TripDetails: React.FC = () => {
                   onClick={() => setIntervalMiles(intv)}
                   className={`h-9 rounded text-xs font-semibold transition ${
                     intervalMiles === intv
-                      ? 'bg-primary text-white'
+                      ? 'bg-primary text-white shadow-xs'
                       : 'border border-border text-text-primary hover:bg-background'
                   }`}
                 >
@@ -302,16 +350,10 @@ export const TripDetails: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full h-12 mt-2 rounded bg-primary text-white font-semibold text-sm hover:bg-primary-dark transition flex items-center justify-center gap-2 disabled:opacity-75"
+            className="w-full h-12 mt-1 rounded bg-primary text-white font-semibold text-sm hover:bg-primary-dark transition flex items-center justify-center gap-2 shadow-sm cursor-pointer"
           >
-            {isLoading ? (
-              <>
-                <Loader2 size={16} className="animate-spin" />
-                <span>{loadingStep || 'Analyzing Weather & Routes...'}</span>
-              </>
-            ) : (
-              <span>Analyze Safe Routes</span>
-            )}
+            <span>Analyze Safe Routes</span>
+            <ArrowRight size={16} />
           </button>
         </form>
       </div>
