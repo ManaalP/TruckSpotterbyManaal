@@ -39,3 +39,48 @@
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
+
+/* Animations for Truck Moving on Road Loader */
+@keyframes roadMove {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes truckBob {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-2.5px);
+  }
+}
+
+@keyframes progressIndeterminate {
+  0% {
+    transform: translateX(-100%);
+    width: 30%;
+  }
+  50% {
+    width: 65%;
+  }
+  100% {
+    transform: translateX(250%);
+    width: 30%;
+  }
+}
+
+.animate-road-move {
+  animation: roadMove 0.8s linear infinite;
+}
+
+.animate-truck-bob {
+  animation: truckBob 0.5s ease-in-out infinite;
+}
+
+.animate-progress-indeterminate {
+  animation: progressIndeterminate 1.5s ease-in-out infinite;
+}

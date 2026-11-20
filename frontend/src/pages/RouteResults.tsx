@@ -7,6 +7,7 @@ import { CheckpointList } from '../components/CheckpointList'
 import { MapView } from '../components/MapView'
 import { RiskBadge } from '../components/RiskBadge'
 import { ForecastSlider } from '../components/ForecastSlider'
+import { TruckLoader } from '../components/TruckLoader'
 import {
   Navigation,
   Weight,
@@ -20,7 +21,7 @@ import {
   ShieldAlert
 } from 'lucide-react'
 
-// Default sample data for instant cold-load presentation
+// Default sample data for instant presentation
 const DEFAULT_ORIGIN = 'Chicago, IL'
 const DEFAULT_DESTINATION = 'Denver, CO'
 const DEFAULT_WEIGHT = 38000
@@ -51,16 +52,17 @@ export const RouteResults: React.FC = () => {
   const [selectedCheckpointIndex, setSelectedCheckpointIndex] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  // Corridor Heatmap Side Panel states
-  const [isHeatmapOpen, setIsHeatmapOpen] = useState(false)
+  // Both sidebars open by default as requested: keep everything open
+  const [isHeatmapOpen, setIsHeatmapOpen] = useState(true)
   const [heatmapData, setHeatmapData] = useState<HeatmapResponse | null>(null)
   const [currentHour, setCurrentHour] = useState<number>(0)
   const [heatmapMode, setHeatmapMode] = useState<'risk' | 'wind' | 'rain' | 'snow'>('risk')
+  const [isHeatmapLoading, setIsHeatmapLoading] = useState(false)
 
   const originRef = useRef<HTMLDivElement>(null)
   const destRef = useRef<HTMLDivElement>(null)
 
-  // Initial load: either restore from session or run instant initial query
+  // Initial load: either restore from session or run initial query
   useEffect(() => {
     const raw = sessionStorage.getItem('spotter_route_data')
     if (raw) {
@@ -74,6 +76,7 @@ export const RouteResults: React.FC = () => {
         if (parsed.recommendation?.route_id) {
           setSelectedRouteId(parsed.recommendation.route_id)
         }
+        loadCorridorHeatmap(parsed)
         return
       } catch (_) {}
     }
@@ -145,9 +148,8 @@ export const RouteResults: React.FC = () => {
       }
       setIsEditingBar(false)
 
-      if (isHeatmapOpen) {
-        loadCorridorHeatmap(res)
-      }
+      // Always update heatmap data when routes change
+      loadCorridorHeatmap(res)
     } catch (e: any) {
       alert(e.message || 'Error calculating routes')
     } finally {
@@ -156,6 +158,7 @@ export const RouteResults: React.FC = () => {
   }
 
   const loadCorridorHeatmap = async (currentData: RouteAnalyzeResponse) => {
+    setIsHeatmapLoading(true)
     try {
       const routeGeoms = currentData.routes.map((r) => r.geometry.coordinates)
       const res = await fetchHeatmap({
@@ -164,7 +167,10 @@ export const RouteResults: React.FC = () => {
         start_time: currentData.departure_time,
       })
       setHeatmapData(res)
-    } catch (_) {}
+    } catch (_) {
+    } finally {
+      setIsHeatmapLoading(false)
+    }
   }
 
   const toggleHeatmapPanel = () => {
@@ -179,7 +185,7 @@ export const RouteResults: React.FC = () => {
   const currentFrame = heatmapData?.frames[currentHour]
 
   return (
-    <div className="min-h-screen bg-background flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-background flex flex-col overflow-hidden relative">
       {/* Flight-Style Search Header (Persistent & Directly Editable) */}
       <header className="border-b border-border bg-surface px-4 py-2.5 shadow-sm z-30">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -345,7 +351,7 @@ export const RouteResults: React.FC = () => {
             </button>
           </div>
 
-          {/* Right: Corridor Heatmap Taskbar Button */}
+          {/* Right: Corridor Heatmap Taskbar Toggle */}
           <button
             onClick={toggleHeatmapPanel}
             className={`flex items-center gap-1.5 text-xs font-bold px-3.5 h-9 rounded transition border ${
@@ -355,15 +361,25 @@ export const RouteResults: React.FC = () => {
             }`}
           >
             <Layers size={14} />
-            <span>{isHeatmapOpen ? 'Close Heatmap' : 'Corridor Heatmap'}</span>
+            <span>{isHeatmapOpen ? 'Heatmap Taskbar Open' : 'Open Heatmap'}</span>
           </button>
         </div>
       </header>
 
-      {/* Main 3-Column Split View */}
+      {/* Main 3-Column Split View: All Panels Kept Open */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
-        {/* Left Side: Recommendations & Route Cards & Checkpoint List (Preserved) */}
-        <div className="w-full lg:w-[460px] p-4 flex flex-col gap-4 overflow-y-auto max-h-[calc(100vh-60px)] border-r border-border bg-surface flex-shrink-0 z-10">
+        {/* Full-Screen Loading Overlay with Truck on Road Animation */}
+        {isLoading && (
+          <div className="absolute inset-0 z-50 bg-background/70 backdrop-blur-xs flex items-center justify-center p-4">
+            <TruckLoader
+              message="Calculating Weather-Aware Routes..."
+              subMessage="Routing truck, sampling atmospheric data, and evaluating crosswind rollover risk"
+            />
+          </div>
+        )}
+
+        {/* Left Side: Recommendations & Route Cards & Checkpoint List */}
+        <div className="w-full lg:w-[440px] p-4 flex flex-col gap-4 overflow-y-auto max-h-[calc(100vh-60px)] border-r border-border bg-surface flex-shrink-0 z-10">
           {data ? (
             <>
               {/* Recommendation Card */}
@@ -421,13 +437,15 @@ export const RouteResults: React.FC = () => {
             </>
           ) : (
             <div className="flex flex-col items-center justify-center p-8 text-center text-text-muted">
-              <Loader2 size={24} className="animate-spin text-primary mb-2" />
-              <p className="text-xs">Loading safe route options...</p>
+              <TruckLoader
+                message="Loading Routes..."
+                subMessage="Preparing commercial freight corridor analysis"
+              />
             </div>
           )}
         </div>
 
-        {/* Center: Map Area (Smoothly Shrinks when Right Taskbar opens) */}
+        {/* Center: Map Area */}
         <div className="flex-1 relative bg-background p-3 flex flex-col overflow-hidden min-h-[400px]">
           {data && (
             <MapView
@@ -440,9 +458,9 @@ export const RouteResults: React.FC = () => {
           )}
         </div>
 
-        {/* Right Side: Corridor Heatmap Taskbar (Collapsible Side Drawer) */}
+        {/* Right Side: Corridor Heatmap Taskbar Drawer (Open by default) */}
         {isHeatmapOpen && (
-          <div className="w-full lg:w-[380px] border-l border-border bg-surface flex flex-col max-h-[calc(100vh-60px)] shadow-lg z-20 transition-all">
+          <div className="w-full lg:w-[380px] border-l border-border bg-surface flex flex-col max-h-[calc(100vh-60px)] shadow-lg z-20 flex-shrink-0 transition-all">
             {/* Taskbar Header */}
             <div className="p-3 border-b border-border flex items-center justify-between bg-surface">
               <div className="flex items-center gap-2">
@@ -452,7 +470,7 @@ export const RouteResults: React.FC = () => {
               <button
                 onClick={() => setIsHeatmapOpen(false)}
                 className="p-1 rounded text-text-muted hover:text-text-primary hover:bg-background"
-                title="Close taskbar"
+                title="Collapse sidebar"
               >
                 <X size={15} />
               </button>
@@ -493,50 +511,61 @@ export const RouteResults: React.FC = () => {
 
             {/* Slider & Time Frame Controls */}
             <div className="p-4 flex-1 flex flex-col gap-4 overflow-y-auto">
-              <ForecastSlider
-                currentHourIndex={currentHour}
-                totalHours={heatmapData?.total_hours || 49}
-                displayTime={currentFrame?.display_time || 'Hour +0'}
-                onChangeHour={(h) => setCurrentHour(h)}
-                departureTimeStr={data?.departure_time ? new Date(data.departure_time).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : undefined}
-                arrivalTimeStr={selectedRoute ? new Date(selectedRoute.summary.arrival_time).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : undefined}
-              />
-
-              {/* Point Grid Summary for Active Hour */}
-              <div className="p-3 rounded-lg border border-border bg-background/50 flex flex-col gap-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-text-primary">Corridor Conditions at {currentFrame?.display_time}</span>
-                  <span className="text-[11px] text-text-muted">+{currentHour}h</span>
+              {isHeatmapLoading && !heatmapData ? (
+                <div className="py-8">
+                  <TruckLoader
+                    message="Sampling Forecast Grid..."
+                    subMessage="Calculating atmospheric corridor frames"
+                  />
                 </div>
+              ) : (
+                <>
+                  <ForecastSlider
+                    currentHourIndex={currentHour}
+                    totalHours={heatmapData?.total_hours || 49}
+                    displayTime={currentFrame?.display_time || 'Hour +0'}
+                    onChangeHour={(h) => setCurrentHour(h)}
+                    departureTimeStr={data?.departure_time ? new Date(data.departure_time).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : undefined}
+                    arrivalTimeStr={selectedRoute ? new Date(selectedRoute.summary.arrival_time).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : undefined}
+                  />
 
-                <div className="grid grid-cols-3 gap-2 text-center pt-1 tabular-nums">
-                  <div className="p-2 rounded bg-surface border border-border">
-                    <span className="text-[10px] text-text-muted uppercase block">Peak Wind</span>
-                    <span className="text-sm font-bold text-text-primary">
-                      {Math.max(...(currentFrame?.points.map((p) => p.wind) || [0])).toFixed(0)} mph
-                    </span>
+                  {/* Point Grid Summary for Active Hour */}
+                  <div className="p-3 rounded-lg border border-border bg-background/50 flex flex-col gap-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-text-primary">Corridor Conditions ({currentFrame?.display_time})</span>
+                      <span className="text-[11px] text-text-muted">+{currentHour}h</span>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 text-center pt-1 tabular-nums">
+                      <div className="p-2 rounded bg-surface border border-border">
+                        <span className="text-[10px] text-text-muted uppercase block">Peak Wind</span>
+                        <span className="text-sm font-bold text-text-primary">
+                          {Math.max(...(currentFrame?.points.map((p) => p.wind) || [0])).toFixed(0)} mph
+                        </span>
+                      </div>
+
+                      <div className="p-2 rounded bg-surface border border-border">
+                        <span className="text-[10px] text-text-muted uppercase block">Max Rain</span>
+                        <span className="text-sm font-bold text-text-primary">
+                          {Math.max(...(currentFrame?.points.map((p) => p.rain) || [0])).toFixed(2)} in/h
+                        </span>
+                      </div>
+
+                      <div className="p-2 rounded bg-surface border border-border">
+                        <span className="text-[10px] text-text-muted uppercase block">Max Snow</span>
+                        <span className="text-sm font-bold text-text-primary">
+                          {Math.max(...(currentFrame?.points.map((p) => p.snow) || [0])).toFixed(1)} in/h
+                        </span>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="p-2 rounded bg-surface border border-border">
-                    <span className="text-[10px] text-text-muted uppercase block">Max Rain</span>
-                    <span className="text-sm font-bold text-text-primary">
-                      {Math.max(...(currentFrame?.points.map((p) => p.rain) || [0])).toFixed(2)} in/h
-                    </span>
+                  {/* Micro instructions */}
+                  <div className="text-[11px] text-text-muted leading-relaxed p-2.5 rounded bg-surface border border-border">
+                    Scrub the slider or click <strong>Play</strong> to simulate changing atmospheric conditions along the route corridor from departure to +48 hours.
                   </div>
-
-                  <div className="p-2 rounded bg-surface border border-border">
-                    <span className="text-[10px] text-text-muted uppercase block">Max Snow</span>
-                    <span className="text-sm font-bold text-text-primary">
-                      {Math.max(...(currentFrame?.points.map((p) => p.snow) || [0])).toFixed(1)} in/h
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Micro instructions */}
-              <div className="text-[11px] text-text-muted leading-relaxed p-2.5 rounded bg-surface border border-border">
-                Scrub the slider or click <strong>Play</strong> to simulate changing atmospheric conditions along the route corridor from departure to +48 hours.
-              </div>
+                </>
+              )}
             </div>
           </div>
         )}
