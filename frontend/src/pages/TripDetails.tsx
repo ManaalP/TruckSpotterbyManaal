@@ -187,7 +187,7 @@ export const TripDetails: React.FC = () => {
       <div className="flex-1 flex flex-col items-center justify-center p-4">
         {/* Full-Screen Loading Overlay with Truck on Road Animation */}
         {isLoading && (
-          <div className="absolute inset-0 z-50 bg-background/80 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
             <TruckLoader
               message="Calculating Weather-Aware Routes..."
               subMessage={`Evaluating corridors and crosswinds in ${activeTzObj.label}`}
@@ -227,7 +227,7 @@ export const TripDetails: React.FC = () => {
                   setShowOriginMenu(true)
                 }}
                 placeholder="City or logistics hub (e.g. Chicago, IL)"
-                className={`w-full h-11 pl-3 pr-10 border rounded text-sm text-text-primary focus:outline-none focus:border-primary ${
+                className={`w-full h-11 pl-3 pr-10 border rounded text-sm bg-surface text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary ${
                   errors.origin ? 'border-risk-severe' : 'border-border'
                 }`}
               />
@@ -270,7 +270,7 @@ export const TripDetails: React.FC = () => {
                   setShowDestMenu(true)
                 }}
                 placeholder="City or logistics hub (e.g. Denver, CO)"
-                className={`w-full h-11 pl-3 pr-10 border rounded text-sm text-text-primary focus:outline-none focus:border-primary ${
+                className={`w-full h-11 pl-3 pr-10 border rounded text-sm bg-surface text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary ${
                   errors.destination ? 'border-risk-severe' : 'border-border'
                 }`}
               />
@@ -311,7 +311,7 @@ export const TripDetails: React.FC = () => {
                   type="datetime-local"
                   value={departureTime}
                   onChange={(e) => setDepartureTime(e.target.value)}
-                  className="w-full h-11 px-3 border border-border rounded text-sm text-text-primary focus:outline-none focus:border-primary tabular-nums"
+                  className="w-full h-11 px-3 border border-border rounded text-sm bg-surface text-text-primary focus:outline-none focus:border-primary tabular-nums"
                 />
               </div>
               {errors.departureTime && (
@@ -328,7 +328,7 @@ export const TripDetails: React.FC = () => {
                 <select
                   value={selectedTimeZone}
                   onChange={(e) => setSelectedTimeZone(e.target.value as USTimeZone)}
-                  className="w-full bg-transparent text-sm font-semibold text-text-primary focus:outline-none cursor-pointer"
+                  className="w-full bg-surface text-sm font-semibold text-text-primary focus:outline-none cursor-pointer"
                 >
                   {US_TIMEZONES.map((tz) => (
                     <option key={tz.id} value={tz.id}>
@@ -357,7 +357,7 @@ export const TripDetails: React.FC = () => {
                 step="500"
                 min="1000"
                 max="90000"
-                className="w-full h-11 pl-9 pr-12 border border-border rounded text-sm text-text-primary focus:outline-none focus:border-primary tabular-nums font-semibold"
+                className="w-full h-11 pl-9 pr-12 border border-border rounded text-sm bg-surface text-text-primary focus:outline-none focus:border-primary tabular-nums font-semibold"
               />
               <span className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-xs font-bold text-text-muted pointer-events-none">
                 LB

@@ -11,7 +11,7 @@ export const TruckLoader: React.FC<TruckLoaderProps> = ({
   subMessage = 'Sampling atmospheric forecasts across highway corridors',
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center p-8 bg-surface/90 backdrop-blur-xs rounded-xl border border-border shadow-md max-w-sm w-full mx-auto">
+    <div className="flex flex-col items-center justify-center p-8 bg-surface rounded-xl border border-border shadow-2xl max-w-sm w-full mx-auto relative z-50">
       {/* Animated Road & Truck Stage */}
       <div className="relative w-64 h-16 overflow-hidden flex items-end justify-center mb-4">
         {/* Road Surface */}

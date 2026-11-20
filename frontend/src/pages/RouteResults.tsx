@@ -434,7 +434,7 @@ export const RouteResults: React.FC = () => {
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
         {/* Full-Screen Loading Overlay with Truck on Road Animation */}
         {isLoading && (
-          <div className="absolute inset-0 z-50 bg-background/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
             <TruckLoader
               message="Calculating Weather-Aware Routes..."
               subMessage={`Evaluating corridors and crosswinds in ${activeTzObj.label}`}

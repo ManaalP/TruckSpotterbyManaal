@@ -342,22 +342,22 @@ export const MapView: React.FC<MapViewProps> = ({
     >
       <div ref={mapContainerRef} className="w-full h-full z-0" />
 
-      {/* Floating Map Theme Toggle (Time of Day / Night Control) */}
+      {/* Floating Map Theme Toggle (Neutral Minimal Glass Style) */}
       <div className="absolute top-3 right-3 z-[1000] pointer-events-auto">
         <button
           type="button"
           onClick={toggleMapTheme}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-surface/90 backdrop-blur-sm border border-border shadow-md text-xs font-semibold text-text-primary hover:bg-surface transition cursor-pointer"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-surface border border-border shadow-md text-xs font-semibold text-text-primary hover:bg-background transition cursor-pointer select-none"
           title={`Toggle map mode (currently ${isMapNightMode ? 'Night Mode' : 'Day Mode'})`}
         >
           {isMapNightMode ? (
             <>
-              <Moon size={14} className="text-amber-400" />
+              <Moon size={13} className="text-text-muted" />
               <span>Map Night</span>
             </>
           ) : (
             <>
-              <Sun size={14} className="text-amber-500" />
+              <Sun size={13} className="text-text-muted" />
               <span>Map Day</span>
             </>
           )}

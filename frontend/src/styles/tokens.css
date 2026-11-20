@@ -48,6 +48,28 @@
     -webkit-font-smoothing: antialiased;
     transition: background-color 0.2s ease, color 0.2s ease;
   }
+
+  /* Universal dark mode styling for all inputs, select options, and placeholders */
+  input, select, textarea {
+    color: var(--color-text-primary);
+  }
+
+  .dark input,
+  .dark select,
+  .dark textarea {
+    color-scheme: dark;
+  }
+
+  .dark input::placeholder,
+  .dark textarea::placeholder {
+    color: var(--color-text-muted);
+    opacity: 0.8;
+  }
+
+  .dark select option {
+    background-color: var(--color-surface);
+    color: var(--color-text-primary);
+  }
 }
 
 .tabular-nums {
