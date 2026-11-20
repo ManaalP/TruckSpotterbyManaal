@@ -12,8 +12,39 @@ interface MapViewProps {
   isHeatmapOpen?: boolean
 }
 
-// 100% Free OpenStreetMap Global Tile Service (reliable worldwide, free, zero keys needed)
+// 100% Free Standard OpenStreetMap Global Tiles
 const OSM_TILES_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+
+/**
+ * Calculate bearing angle (degrees 0-360) between two coordinates (lat1, lon1) -> (lat2, lon2)
+ */
+function getBearingDegrees(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const dLon = ((lon2 - lon1) * Math.PI) / 180
+  const y = Math.sin(dLon) * Math.cos((lat2 * Math.PI) / 180)
+  const x =
+    Math.cos((lat1 * Math.PI) / 180) * Math.sin((lat2 * Math.PI) / 180) -
+    Math.sin((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.cos(dLon)
+  let brng = (Math.atan2(y, x) * 180) / Math.PI
+  return (brng + 360) % 360
+}
+
+/**
+ * Create a crisp SVG directional arrow marker pointing along the route bearing
+ */
+function createDirectionArrowIcon(angle: number, color: string = '#FFFFFF') {
+  return L.divIcon({
+    className: 'route-direction-arrow',
+    iconSize: [16, 16],
+    iconAnchor: [8, 8],
+    html: `
+      <div style="transform: rotate(${angle}deg); width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; pointer-events: none;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="${color}" stroke="#1E293B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0px 1px 2px rgba(0,0,0,0.5));">
+          <polygon points="12 2 19 21 12 17 5 21 12 2" />
+        </svg>
+      </div>
+    `,
+  })
+}
 
 export const MapView: React.FC<MapViewProps> = ({
   routes,
@@ -26,7 +57,7 @@ export const MapView: React.FC<MapViewProps> = ({
   const mapRef = useRef<L.Map | null>(null)
   const layersGroupRef = useRef<L.FeatureGroup | null>(null)
 
-  // Initialize Free Leaflet map with standard OpenStreetMap tiles
+  // Initialize Free Leaflet map
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return
 
@@ -37,7 +68,6 @@ export const MapView: React.FC<MapViewProps> = ({
       preferCanvas: true,
     })
 
-    // Standard OpenStreetMap public tile layer
     L.tileLayer(OSM_TILES_URL, {
       maxZoom: 19,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -63,7 +93,7 @@ export const MapView: React.FC<MapViewProps> = ({
     }
   }, [isHeatmapOpen])
 
-  // Draw routes and checkpoints
+  // Draw routes, direction arrows, and checkpoints
   useEffect(() => {
     const map = mapRef.current
     const group = layersGroupRef.current
@@ -71,7 +101,7 @@ export const MapView: React.FC<MapViewProps> = ({
 
     group.clearLayers()
 
-    // 1. Inactive alternative routes (muted grey lines)
+    // 1. Inactive routes (subtle grey polylines)
     routes
       .filter((r) => r.id !== selectedRouteId)
       .forEach((r) => {
@@ -82,18 +112,21 @@ export const MapView: React.FC<MapViewProps> = ({
         if (latlngs.length > 1) {
           L.polyline(latlngs, {
             color: '#64748B',
-            weight: 4,
-            opacity: 0.6,
+            weight: 3.5,
+            opacity: 0.55,
             lineCap: 'round',
             lineJoin: 'round',
           }).addTo(group)
         }
       })
 
-    // 2. Selected Active Route (colored by risk segments)
+    // 2. Selected Active Route (colored by risk segments + direction arrows)
     const activeRoute = routes.find((r) => r.id === selectedRouteId)
     if (activeRoute) {
-      (activeRoute.segments || []).forEach((seg) => {
+      const allCoords = activeRoute.geometry?.coordinates || []
+
+      // Draw risk segments
+      ;(activeRoute.segments || []).forEach((seg) => {
         const segLatLngs: [number, number][] = seg.coordinates.map((c) => [c[1], c[0]])
         const color = (RISK_COLORS as any)[seg.risk_level]?.hex || '#2E8B57'
         L.polyline(segLatLngs, {
@@ -104,6 +137,29 @@ export const MapView: React.FC<MapViewProps> = ({
           lineJoin: 'round',
         }).addTo(group)
       })
+
+      // Add Directional Arrow Markers periodically along the active route
+      if (allCoords.length >= 6) {
+        // Place an arrow every ~8-12 coordinates along the geometry
+        const arrowStep = Math.max(4, Math.floor(allCoords.length / 10))
+        for (let i = arrowStep; i < allCoords.length - 2; i += arrowStep) {
+          const ptCurrent = allCoords[i]
+          const ptNext = allCoords[Math.min(i + 1, allCoords.length - 1)]
+
+          const bearing = getBearingDegrees(
+            ptCurrent[1],
+            ptCurrent[0],
+            ptNext[1],
+            ptNext[0]
+          )
+
+          const arrowMarker = L.marker([ptCurrent[1], ptCurrent[0]], {
+            icon: createDirectionArrowIcon(bearing, '#F8FAFC'),
+            interactive: false,
+          })
+          arrowMarker.addTo(group)
+        }
+      }
 
       // 3. Checkpoints (Interactive circle markers)
       ;(activeRoute.checkpoints || []).forEach((cp) => {
@@ -133,10 +189,7 @@ export const MapView: React.FC<MapViewProps> = ({
       })
 
       // Fit map bounds to active route
-      const activeCoords: [number, number][] = (activeRoute.geometry?.coordinates || []).map((c) => [
-        c[1],
-        c[0],
-      ])
+      const activeCoords: [number, number][] = allCoords.map((c) => [c[1], c[0]])
       if (activeCoords.length > 1) {
         map.fitBounds(L.latLngBounds(activeCoords), {
           padding: [45, 45],
