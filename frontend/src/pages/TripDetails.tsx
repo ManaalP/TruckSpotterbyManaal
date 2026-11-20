@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { searchGeocode, analyzeRoutes } from '../api/client'
 import type { PlaceResult } from '../api/types'
@@ -18,18 +18,37 @@ export const TripDetails: React.FC = () => {
   const [loadWeight, setLoadWeight] = useState<number>(38000)
   const [intervalMiles, setIntervalMiles] = useState<number>(25)
 
-  // Autocomplete states
+  // Autocomplete states & focus tracking
   const [originSuggestions, setOriginSuggestions] = useState<PlaceResult[]>([])
   const [destSuggestions, setDestSuggestions] = useState<PlaceResult[]>([])
+  const [showOriginMenu, setShowOriginMenu] = useState(false)
+  const [showDestMenu, setShowDestMenu] = useState(false)
 
   // Submission & Validation states
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(false)
   const [loadingStep, setLoadingStep] = useState('')
 
+  const originContainerRef = useRef<HTMLDivElement>(null)
+  const destContainerRef = useRef<HTMLDivElement>(null)
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (originContainerRef.current && !originContainerRef.current.contains(e.target as Node)) {
+        setShowOriginMenu(false)
+      }
+      if (destContainerRef.current && !destContainerRef.current.contains(e.target as Node)) {
+        setShowDestMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   // Debounced geocoding search for origin
   useEffect(() => {
-    if (originQuery.length < 2) {
+    if (originQuery.trim().length < 2) {
       setOriginSuggestions([])
       return
     }
@@ -38,13 +57,13 @@ export const TripDetails: React.FC = () => {
         const res = await searchGeocode(originQuery)
         setOriginSuggestions(res)
       } catch (err) {}
-    }, 300)
+    }, 250)
     return () => clearTimeout(timer)
   }, [originQuery])
 
   // Debounced geocoding search for destination
   useEffect(() => {
-    if (destinationQuery.length < 2) {
+    if (destinationQuery.trim().length < 2) {
       setDestSuggestions([])
       return
     }
@@ -53,7 +72,7 @@ export const TripDetails: React.FC = () => {
         const res = await searchGeocode(destinationQuery)
         setDestSuggestions(res)
       } catch (err) {}
-    }, 300)
+    }, 250)
     return () => clearTimeout(timer)
   }, [destinationQuery])
 
@@ -88,7 +107,6 @@ export const TripDetails: React.FC = () => {
       }
 
       const results = await analyzeRoutes(payload)
-      // Save results in sessionStorage for seamless cross-page access
       sessionStorage.setItem('spotter_route_data', JSON.stringify(results))
       navigate('/results')
     } catch (err: any) {
@@ -121,7 +139,7 @@ export const TripDetails: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {/* Origin */}
-          <div className="relative">
+          <div ref={originContainerRef} className="relative">
             <label className="block text-xs font-semibold text-text-primary mb-1">
               Origin Location
             </label>
@@ -129,29 +147,34 @@ export const TripDetails: React.FC = () => {
               <input
                 type="text"
                 value={originQuery}
-                onChange={(e) => setOriginQuery(e.target.value)}
-                placeholder="e.g. Chicago, IL"
-                className={`w-full h-11 px-3 border rounded text-sm text-text-primary focus:outline-none focus:border-primary ${
+                onFocus={() => setShowOriginMenu(true)}
+                onChange={(e) => {
+                  setOriginQuery(e.target.value)
+                  setShowOriginMenu(true)
+                }}
+                placeholder="Type city or freight hub (e.g. Chicago, IL)"
+                className={`w-full h-11 pl-3 pr-10 border rounded text-sm text-text-primary focus:outline-none focus:border-primary ${
                   errors.origin ? 'border-risk-severe' : 'border-border'
                 }`}
               />
-              <Navigation size={15} className="absolute right-3 top-3.5 text-text-muted" />
+              <Navigation size={15} className="absolute right-3.5 top-3.5 text-text-muted pointer-events-none" />
             </div>
             {errors.origin && <p className="text-xs text-risk-severe mt-1">{errors.origin}</p>}
 
             {/* Suggestions dropdown */}
-            {originSuggestions.length > 0 && (
-              <ul className="absolute z-10 w-full mt-1 bg-surface border border-border rounded shadow-lg max-h-40 overflow-y-auto">
+            {showOriginMenu && originSuggestions.length > 0 && (
+              <ul className="absolute z-20 w-full mt-1 bg-surface border border-border rounded shadow-lg max-h-48 overflow-y-auto divide-y divide-border/50">
                 {originSuggestions.map((s, idx) => (
                   <li
                     key={idx}
-                    onClick={() => {
+                    onMouseDown={() => {
                       setOriginQuery(s.label)
-                      setOriginSuggestions([])
+                      setShowOriginMenu(false)
                     }}
-                    className="p-2 text-xs text-text-primary hover:bg-background cursor-pointer"
+                    className="p-2.5 text-xs text-text-primary hover:bg-background cursor-pointer flex items-center gap-2"
                   >
-                    {s.label}
+                    <Navigation size={12} className="text-primary flex-shrink-0" />
+                    <span className="truncate">{s.label}</span>
                   </li>
                 ))}
               </ul>
@@ -159,7 +182,7 @@ export const TripDetails: React.FC = () => {
           </div>
 
           {/* Destination */}
-          <div className="relative">
+          <div ref={destContainerRef} className="relative">
             <label className="block text-xs font-semibold text-text-primary mb-1">
               Destination Location
             </label>
@@ -167,31 +190,36 @@ export const TripDetails: React.FC = () => {
               <input
                 type="text"
                 value={destinationQuery}
-                onChange={(e) => setDestinationQuery(e.target.value)}
-                placeholder="e.g. Denver, CO"
-                className={`w-full h-11 px-3 border rounded text-sm text-text-primary focus:outline-none focus:border-primary ${
+                onFocus={() => setShowDestMenu(true)}
+                onChange={(e) => {
+                  setDestinationQuery(e.target.value)
+                  setShowDestMenu(true)
+                }}
+                placeholder="Type city or freight hub (e.g. Denver, CO)"
+                className={`w-full h-11 pl-3 pr-10 border rounded text-sm text-text-primary focus:outline-none focus:border-primary ${
                   errors.destination ? 'border-risk-severe' : 'border-border'
                 }`}
               />
-              <Navigation size={15} className="absolute right-3 top-3.5 text-text-muted" />
+              <Navigation size={15} className="absolute right-3.5 top-3.5 text-text-muted pointer-events-none" />
             </div>
             {errors.destination && (
               <p className="text-xs text-risk-severe mt-1">{errors.destination}</p>
             )}
 
             {/* Suggestions dropdown */}
-            {destSuggestions.length > 0 && (
-              <ul className="absolute z-10 w-full mt-1 bg-surface border border-border rounded shadow-lg max-h-40 overflow-y-auto">
+            {showDestMenu && destSuggestions.length > 0 && (
+              <ul className="absolute z-20 w-full mt-1 bg-surface border border-border rounded shadow-lg max-h-48 overflow-y-auto divide-y divide-border/50">
                 {destSuggestions.map((s, idx) => (
                   <li
                     key={idx}
-                    onClick={() => {
+                    onMouseDown={() => {
                       setDestinationQuery(s.label)
-                      setDestSuggestions([])
+                      setShowDestMenu(false)
                     }}
-                    className="p-2 text-xs text-text-primary hover:bg-background cursor-pointer"
+                    className="p-2.5 text-xs text-text-primary hover:bg-background cursor-pointer flex items-center gap-2"
                   >
-                    {s.label}
+                    <Navigation size={12} className="text-primary flex-shrink-0" />
+                    <span className="truncate">{s.label}</span>
                   </li>
                 ))}
               </ul>
@@ -217,19 +245,25 @@ export const TripDetails: React.FC = () => {
               )}
             </div>
 
+            {/* Cargo Load Weight with Clean Left-Aligned Icon to avoid spinner overlapping */}
             <div>
               <label className="block text-xs font-semibold text-text-primary mb-1">
                 Cargo Load Weight (lb)
               </label>
               <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Weight size={16} className="text-text-muted" />
+                </div>
                 <input
                   type="number"
-                  value={loadWeight}
+                  value={loadWeight || ''}
                   onChange={(e) => setLoadWeight(Number(e.target.value))}
                   placeholder="e.g. 38000"
-                  className="w-full h-11 px-3 border border-border rounded text-sm text-text-primary focus:outline-none focus:border-primary tabular-nums"
+                  step="500"
+                  min="0"
+                  max="100000"
+                  className="w-full h-11 pl-9 pr-3 border border-border rounded text-sm text-text-primary focus:outline-none focus:border-primary tabular-nums"
                 />
-                <Weight size={15} className="absolute right-3 top-3.5 text-text-muted" />
               </div>
               {errors.loadWeight && (
                 <p className="text-xs text-risk-severe mt-1">{errors.loadWeight}</p>
