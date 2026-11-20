@@ -276,6 +276,179 @@ export const MapView: React.FC<MapViewProps> = ({
   return (
     <div className="relative w-full h-full min-h-[400px] rounded-lg overflow-hidden border border-border shadow-xs">
       <div ref={mapContainerRef} className="w-full h-full z-0" />
+
+      {/* Floating Map Legend Indicator */}
+      <div className="absolute bottom-3 left-3 z-[1000] bg-surface/95 backdrop-blur-sm border border-border rounded-md shadow-md p-2.5 max-w-[280px] text-xs pointer-events-auto">
+        <div className="font-bold text-text-primary text-[11px] uppercase tracking-wider mb-1.5 flex items-center justify-between">
+          <span>Map Indicators</span>
+          {isHeatmapOpen && (
+            <span className="text-[10px] font-semibold text-primary capitalize px-1.5 py-0.5 rounded bg-primary/10">
+              {heatmapMode} Mode
+            </span>
+          )}
+        </div>
+
+        {/* 1. Route Checkpoint Indicator */}
+        <div className="space-y-1 mb-2 pb-2 border-b border-border/60">
+          <span className="text-[10px] font-semibold text-text-muted block">Route Checkpoints</span>
+          <div className="grid grid-cols-2 gap-1 text-[10px]">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#2E8B57] border border-white inline-block shadow-xs flex-shrink-0" />
+              <span className="text-text-primary">Low Risk</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#E5B800] border border-white inline-block shadow-xs flex-shrink-0" />
+              <span className="text-text-primary">Moderate</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#E07A1F] border border-white inline-block shadow-xs flex-shrink-0" />
+              <span className="text-text-primary">High</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#C62828] border border-white inline-block shadow-xs flex-shrink-0" />
+              <span className="text-text-primary">Severe</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 pt-0.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#4A0E1A] border border-white inline-block shadow-xs flex-shrink-0" />
+            <span className="text-text-primary text-[10px]">No Travel (Blizzard / Storm)</span>
+          </div>
+        </div>
+
+        {/* 2. Heatmap Blip Indicators (When Heatmap Taskbar is open) */}
+        {isHeatmapOpen && (
+          <div className="space-y-1">
+            <span className="text-[10px] font-semibold text-text-muted block">
+              Corridor Hazard Blips ({heatmapMode.toUpperCase()})
+            </span>
+
+            {heatmapMode === 'risk' && (
+              <div className="space-y-1 text-[10px]">
+                <div className="flex items-center gap-1.5">
+                  <span className="relative flex h-3 w-3 items-center justify-center">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-[#E5B800] opacity-40"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#E5B800] border border-white"></span>
+                  </span>
+                  <span>Moderate Weather Risk</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="relative flex h-3 w-3 items-center justify-center">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-[#E07A1F] opacity-40"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#E07A1F] border border-white"></span>
+                  </span>
+                  <span>High Crosswind / Hazard</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="relative flex h-3 w-3 items-center justify-center">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-[#C62828] opacity-50"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#C62828] border border-white"></span>
+                  </span>
+                  <span>Severe / No Travel Warning</span>
+                </div>
+              </div>
+            )}
+
+            {heatmapMode === 'wind' && (
+              <div className="space-y-1 text-[10px]">
+                <div className="flex items-center gap-1.5">
+                  <span className="relative flex h-3 w-3 items-center justify-center">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-[#60A5FA] opacity-40"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#60A5FA] border border-white"></span>
+                  </span>
+                  <span>15–24 mph (Breeze)</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="relative flex h-3 w-3 items-center justify-center">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-[#E5B800] opacity-40"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#E5B800] border border-white"></span>
+                  </span>
+                  <span>25–34 mph (Caution)</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="relative flex h-3 w-3 items-center justify-center">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-[#E07A1F] opacity-40"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#E07A1F] border border-white"></span>
+                  </span>
+                  <span>35–44 mph (Heavy Wind)</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="relative flex h-3 w-3 items-center justify-center">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-[#C62828] opacity-50"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#C62828] border border-white"></span>
+                  </span>
+                  <span>≥ 45 mph (Severe Gale / No Travel)</span>
+                </div>
+              </div>
+            )}
+
+            {heatmapMode === 'rain' && (
+              <div className="space-y-1 text-[10px]">
+                <div className="flex items-center gap-1.5">
+                  <span className="relative flex h-3 w-3 items-center justify-center">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-[#60A5FA] opacity-40"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#60A5FA] border border-white"></span>
+                  </span>
+                  <span>Light Rain (&lt; 0.10 in/h)</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="relative flex h-3 w-3 items-center justify-center">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-[#2563EB] opacity-40"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#2563EB] border border-white"></span>
+                  </span>
+                  <span>Moderate Rain (0.10–0.25 in/h)</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="relative flex h-3 w-3 items-center justify-center">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-[#E07A1F] opacity-40"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#E07A1F] border border-white"></span>
+                  </span>
+                  <span>Heavy Rain (0.25–0.50 in/h)</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="relative flex h-3 w-3 items-center justify-center">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-[#C62828] opacity-50"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#C62828] border border-white"></span>
+                  </span>
+                  <span>Torrential (&gt; 0.50 in/h)</span>
+                </div>
+              </div>
+            )}
+
+            {heatmapMode === 'snow' && (
+              <div className="space-y-1 text-[10px]">
+                <div className="flex items-center gap-1.5">
+                  <span className="relative flex h-3 w-3 items-center justify-center">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-[#93C5FD] opacity-40"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#93C5FD] border border-white"></span>
+                  </span>
+                  <span>Light Snow (&lt; 0.5 in/h)</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="relative flex h-3 w-3 items-center justify-center">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-[#38BDF8] opacity-40"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#38BDF8] border border-white"></span>
+                  </span>
+                  <span>Moderate Snow (0.5–1.0 in/h)</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="relative flex h-3 w-3 items-center justify-center">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-[#0284C7] opacity-40"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#0284C7] border border-white"></span>
+                  </span>
+                  <span>Heavy Snow (1.0–2.0 in/h)</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="relative flex h-3 w-3 items-center justify-center">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-[#C62828] opacity-50"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#C62828] border border-white"></span>
+                  </span>
+                  <span>Blizzard (&gt; 2.0 in/h)</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
