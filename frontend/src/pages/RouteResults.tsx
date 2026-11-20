@@ -387,10 +387,11 @@ export const RouteResults: React.FC = () => {
 
           {/* Right: Corridor Heatmap Taskbar Button */}
           <button
+            type="button"
             onClick={toggleHeatmapPanel}
-            className={`flex items-center gap-1.5 text-xs font-bold px-3.5 h-9 rounded transition border ${
+            className={`flex items-center gap-1.5 text-xs font-bold px-3.5 h-9 rounded transition cursor-pointer select-none border ${
               isHeatmapOpen
-                ? 'bg-primary text-white border-primary'
+                ? 'bg-primary text-white border-primary shadow-xs'
                 : 'bg-surface text-text-primary border-border hover:bg-background'
             }`}
           >
@@ -488,6 +489,8 @@ export const RouteResults: React.FC = () => {
               selectedCheckpointIndex={selectedCheckpointIndex}
               onSelectCheckpoint={(idx) => setSelectedCheckpointIndex(idx)}
               isHeatmapOpen={isHeatmapOpen}
+              heatmapPoints={currentFrame?.points}
+              heatmapMode={heatmapMode}
             />
           )}
         </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import type { RouteOption } from '../api/types'
+import type { RouteOption, HeatmapPoint } from '../api/types'
 import { RISK_COLORS } from '../lib/risk'
 
 interface MapViewProps {
@@ -10,14 +10,13 @@ interface MapViewProps {
   selectedCheckpointIndex: number | null
   onSelectCheckpoint?: (index: number) => void
   isHeatmapOpen?: boolean
+  heatmapPoints?: HeatmapPoint[]
+  heatmapMode?: 'risk' | 'wind' | 'rain' | 'snow'
 }
 
 // 100% Free Standard OpenStreetMap Global Tiles
 const OSM_TILES_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
 
-/**
- * Calculate bearing angle (degrees 0-360) between two coordinates (lat1, lon1) -> (lat2, lon2)
- */
 function getBearingDegrees(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const dLon = ((lon2 - lon1) * Math.PI) / 180
   const y = Math.sin(dLon) * Math.cos((lat2 * Math.PI) / 180)
@@ -28,9 +27,6 @@ function getBearingDegrees(lat1: number, lon1: number, lat2: number, lon2: numbe
   return (brng + 360) % 360
 }
 
-/**
- * Create a crisp SVG directional arrow marker pointing along the route bearing
- */
 function createDirectionArrowIcon(angle: number, color: string = '#FFFFFF') {
   return L.divIcon({
     className: 'route-direction-arrow',
@@ -52,10 +48,13 @@ export const MapView: React.FC<MapViewProps> = ({
   selectedCheckpointIndex,
   onSelectCheckpoint,
   isHeatmapOpen = false,
+  heatmapPoints,
+  heatmapMode = 'risk',
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
-  const layersGroupRef = useRef<L.FeatureGroup | null>(null)
+  const routesGroupRef = useRef<L.FeatureGroup | null>(null)
+  const heatmapGroupRef = useRef<L.FeatureGroup | null>(null)
 
   // Initialize Free Leaflet map
   useEffect(() => {
@@ -73,14 +72,21 @@ export const MapView: React.FC<MapViewProps> = ({
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map)
 
-    const layersGroup = L.featureGroup().addTo(map)
-    layersGroupRef.current = layersGroup
+    // Heatmap group beneath routes
+    const heatGroup = L.featureGroup().addTo(map)
+    heatmapGroupRef.current = heatGroup
+
+    // Routes group on top
+    const rGroup = L.featureGroup().addTo(map)
+    routesGroupRef.current = rGroup
+
     mapRef.current = map
 
     return () => {
       map.remove()
       mapRef.current = null
-      layersGroupRef.current = null
+      routesGroupRef.current = null
+      heatmapGroupRef.current = null
     }
   }, [])
 
@@ -93,15 +99,70 @@ export const MapView: React.FC<MapViewProps> = ({
     }
   }, [isHeatmapOpen])
 
+  // Heatmap layer updates directly on the map
+  useEffect(() => {
+    const group = heatmapGroupRef.current
+    if (!group) return
+    group.clearLayers()
+
+    if (!isHeatmapOpen || !heatmapPoints || heatmapPoints.length === 0) return
+
+    heatmapPoints.forEach((pt) => {
+      let color = (RISK_COLORS as any)[pt.risk]?.hex || '#2E8B57'
+      let tooltipText = `Risk: ${pt.risk}`
+
+      if (heatmapMode === 'wind') {
+        tooltipText = `Wind: ${pt.wind.toFixed(0)} mph`
+        if (pt.wind >= 45) color = '#C62828'
+        else if (pt.wind >= 35) color = '#E07A1F'
+        else if (pt.wind >= 25) color = '#E5B800'
+        else color = '#2E8B57'
+      } else if (heatmapMode === 'rain') {
+        tooltipText = `Rain: ${pt.rain.toFixed(2)} in/h`
+        if (pt.rain >= 0.5) color = '#C62828'
+        else if (pt.rain >= 0.25) color = '#E07A1F'
+        else if (pt.rain >= 0.1) color = '#3B82F6'
+        else color = '#60A5FA'
+      } else if (heatmapMode === 'snow') {
+        tooltipText = `Snow: ${pt.snow.toFixed(1)} in/h`
+        if (pt.snow >= 2.0) color = '#C62828'
+        else if (pt.snow >= 1.0) color = '#0284C7'
+        else if (pt.snow >= 0.5) color = '#38BDF8'
+        else color = '#BAE6FD'
+      }
+
+      // Outer blur gradient circle
+      L.circleMarker([pt.lat, pt.lon], {
+        radius: 28,
+        fillColor: color,
+        color: 'transparent',
+        weight: 0,
+        fillOpacity: 0.28,
+        interactive: false,
+      }).addTo(group)
+
+      // Inner core circle with hover info
+      const core = L.circleMarker([pt.lat, pt.lon], {
+        radius: 8,
+        fillColor: color,
+        color: '#FFFFFF',
+        weight: 1.5,
+        fillOpacity: 0.85,
+      })
+      core.bindTooltip(tooltipText, { direction: 'top', offset: [0, -5] })
+      core.addTo(group)
+    })
+  }, [heatmapPoints, heatmapMode, isHeatmapOpen])
+
   // Draw routes, direction arrows, and checkpoints
   useEffect(() => {
     const map = mapRef.current
-    const group = layersGroupRef.current
+    const group = routesGroupRef.current
     if (!map || !group) return
 
     group.clearLayers()
 
-    // 1. Inactive routes (subtle grey polylines)
+    // 1. Inactive routes
     routes
       .filter((r) => r.id !== selectedRouteId)
       .forEach((r) => {
@@ -120,12 +181,11 @@ export const MapView: React.FC<MapViewProps> = ({
         }
       })
 
-    // 2. Selected Active Route (colored by risk segments + direction arrows)
+    // 2. Selected Active Route
     const activeRoute = routes.find((r) => r.id === selectedRouteId)
     if (activeRoute) {
       const allCoords = activeRoute.geometry?.coordinates || []
 
-      // Draw risk segments
       ;(activeRoute.segments || []).forEach((seg) => {
         const segLatLngs: [number, number][] = seg.coordinates.map((c) => [c[1], c[0]])
         const color = (RISK_COLORS as any)[seg.risk_level]?.hex || '#2E8B57'
@@ -138,9 +198,8 @@ export const MapView: React.FC<MapViewProps> = ({
         }).addTo(group)
       })
 
-      // Add Directional Arrow Markers periodically along the active route
+      // Directional Arrows
       if (allCoords.length >= 6) {
-        // Place an arrow every ~8-12 coordinates along the geometry
         const arrowStep = Math.max(4, Math.floor(allCoords.length / 10))
         for (let i = arrowStep; i < allCoords.length - 2; i += arrowStep) {
           const ptCurrent = allCoords[i]
@@ -153,15 +212,14 @@ export const MapView: React.FC<MapViewProps> = ({
             ptNext[0]
           )
 
-          const arrowMarker = L.marker([ptCurrent[1], ptCurrent[0]], {
+          L.marker([ptCurrent[1], ptCurrent[0]], {
             icon: createDirectionArrowIcon(bearing, '#F8FAFC'),
             interactive: false,
-          })
-          arrowMarker.addTo(group)
+          }).addTo(group)
         }
       }
 
-      // 3. Checkpoints (Interactive circle markers)
+      // 3. Checkpoints
       ;(activeRoute.checkpoints || []).forEach((cp) => {
         const isSelected = cp.index === selectedCheckpointIndex
         const color = (RISK_COLORS as any)[cp.risk_level]?.hex || '#2E8B57'
@@ -175,7 +233,6 @@ export const MapView: React.FC<MapViewProps> = ({
           fillOpacity: 0.95,
         })
 
-        // Checkpoint tooltip
         marker.bindTooltip(
           `<strong>${cp.label}</strong><br/>Risk: ${cp.risk_level}<br/>Wind: ${cp.wind_mph.toFixed(0)} mph`,
           { direction: 'top', offset: [0, -6] }
@@ -188,7 +245,7 @@ export const MapView: React.FC<MapViewProps> = ({
         marker.addTo(group)
       })
 
-      // Fit map bounds to active route
+      // Fit bounds
       const activeCoords: [number, number][] = allCoords.map((c) => [c[1], c[0]])
       if (activeCoords.length > 1) {
         map.fitBounds(L.latLngBounds(activeCoords), {
