@@ -1,6 +1,15 @@
-# SpotterAI: Weather-Aware Truck Routing
+# TruckSpotter by Manaal: Weather-Aware Truck Routing
 
 A mission-critical web application engineered in React + Django to help long-haul commercial truck operators and freight dispatchers choose the safest route based on real-time atmospheric hazards, cargo load weight, and transit duration.
+
+---
+
+## 🌐 Live Production Deployments
+
+- **Frontend Application**: [https://truckspotterbymanaal.vercel.app](https://truckspotterbymanaal.vercel.app)
+- **Backend REST API**: [https://backend-liard-iota-33.vercel.app](https://backend-liard-iota-33.vercel.app)
+- **API Health Check**: [https://backend-liard-iota-33.vercel.app/api/health](https://backend-liard-iota-33.vercel.app/api/health)
+- **GitHub Repository**: [https://github.com/ManaalP/TruckSpotterbyManaal](https://github.com/ManaalP/TruckSpotterbyManaal)
 
 ---
 
