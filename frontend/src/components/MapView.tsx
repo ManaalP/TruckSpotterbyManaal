@@ -8,13 +8,19 @@ interface MapViewProps {
   selectedRouteId: string
   selectedCheckpointIndex: number | null
   onSelectCheckpoint?: (index: number) => void
+  isHeatmapOpen?: boolean
 }
+
+// Highly reliable global tiles with automatic fallback
+const PRIMARY_MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
+const FALLBACK_MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty'
 
 export const MapView: React.FC<MapViewProps> = ({
   routes,
   selectedRouteId,
   selectedCheckpointIndex,
   onSelectCheckpoint,
+  isHeatmapOpen = false,
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
@@ -24,14 +30,25 @@ export const MapView: React.FC<MapViewProps> = ({
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return
 
+    let currentStyle = PRIMARY_MAP_STYLE
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
-      style: 'https://tiles.openfreemap.org/styles/liberty', // Clean free basemap
-      center: [-98.5795, 39.8283], // Center US
+      style: currentStyle,
+      center: [-98.5795, 39.8283],
       zoom: 4,
     })
 
-    map.addControl(new maplibregl.NavigationControl(), 'top-right')
+    map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right')
+
+    map.on('error', () => {
+      // Automatic fallback if primary tile style fails to load
+      if (!isLoadedRef.current && currentStyle === PRIMARY_MAP_STYLE) {
+        currentStyle = FALLBACK_MAP_STYLE
+        try {
+          map.setStyle(FALLBACK_MAP_STYLE)
+        } catch (_) {}
+      }
+    })
 
     map.on('load', () => {
       isLoadedRef.current = true
@@ -46,6 +63,15 @@ export const MapView: React.FC<MapViewProps> = ({
       isLoadedRef.current = false
     }
   }, [])
+
+  // Auto resize map smoothly when sidebar opens or closes
+  useEffect(() => {
+    if (mapRef.current) {
+      setTimeout(() => {
+        mapRef.current?.resize()
+      }, 150)
+    }
+  }, [isHeatmapOpen])
 
   // Update GeoJSON layers when routes or selection changes
   const updateMapLayers = () => {
@@ -79,7 +105,7 @@ export const MapView: React.FC<MapViewProps> = ({
         source: 'inactive-routes',
         layout: { 'line-join': 'round', 'line-cap': 'round' },
         paint: {
-          'line-color': '#9E9E9E',
+          'line-color': '#A0AEC0',
           'line-width': 4,
           'line-opacity': 0.6,
         },
@@ -119,7 +145,7 @@ export const MapView: React.FC<MapViewProps> = ({
         layout: { 'line-join': 'round', 'line-cap': 'round' },
         paint: {
           'line-color': ['get', 'color'],
-          'line-width': 7,
+          'line-width': 6,
           'line-opacity': 0.95,
         },
       })
@@ -171,7 +197,6 @@ export const MapView: React.FC<MapViewProps> = ({
         },
       })
 
-      // Checkpoint click
       map.on('click', 'checkpoints-circle', (e: any) => {
         if (e.features && e.features[0] && onSelectCheckpoint) {
           const idx = e.features[0].properties?.index
@@ -191,7 +216,7 @@ export const MapView: React.FC<MapViewProps> = ({
     if (selectedRoute && selectedRoute.geometry.coordinates.length > 0) {
       const bounds = new maplibregl.LngLatBounds()
       selectedRoute.geometry.coordinates.forEach((c) => bounds.extend(c as [number, number]))
-      map.fitBounds(bounds, { padding: 50, duration: 800 })
+      map.fitBounds(bounds, { padding: 45, duration: 600 })
     }
   }
 
