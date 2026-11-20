@@ -37,8 +37,8 @@ export const TripDetails: React.FC = () => {
   const [selectedTimeZone, setSelectedTimeZone] = useState<USTimeZone>(DEFAULT_TIMEZONE)
 
   const [departureTime, setDepartureTime] = useState(() => {
-    // Default to the historical severe wind storm event on 2026-11-18 08:00 AM MT
-    return '2026-11-18T08:00'
+    // Default to the severe crosswind storm event on 2026-11-18 07:00 AM MST (14:00 UTC)
+    return '2026-11-18T07:00'
   })
 
   const [loadWeight, setLoadWeight] = useState<number>(DEFAULT_WEIGHT)

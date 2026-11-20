@@ -49,7 +49,7 @@ export const RouteResults: React.FC = () => {
   
   // Datetime input string initialized in US Mountain Time
   const [departureInput, setDepartureInput] = useState(() => {
-    return '2026-11-18T08:00'
+    return '2026-11-18T07:00'
   })
 
   const [loadWeight, setLoadWeight] = useState(DEFAULT_WEIGHT)
