@@ -340,63 +340,41 @@ export const TripDetails: React.FC = () => {
             </div>
           </div>
 
-          {/* Cargo Load Weight with Dynamic Interactive Slider & Presets */}
+          {/* Cargo Load Weight with Direct Numerical Input + Dynamic Slider */}
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-xs font-semibold text-text-primary flex items-center gap-1.5">
-                <Weight size={14} className="text-primary" />
-                <span>Cargo Load Weight</span>
-              </label>
-              <span className="text-xs font-bold text-primary tabular-nums">
-                {Number(loadWeight || 0).toLocaleString()} lb
-                <span className="text-[10px] font-normal text-text-muted ml-1">
-                  ({loadWeight < 30000 ? 'Light/Empty' : loadWeight <= 40000 ? 'Standard Load' : 'Heavy Load'})
-                </span>
+            <label className="block text-xs font-semibold text-text-primary mb-1">
+              Cargo Load Weight (lb)
+            </label>
+            <div className="relative mb-2">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Weight size={15} className="text-text-muted" />
+              </div>
+              <input
+                type="number"
+                value={loadWeight || ''}
+                onChange={(e) => setLoadWeight(Number(e.target.value))}
+                placeholder="e.g. 38000"
+                step="500"
+                min="1000"
+                max="90000"
+                className="w-full h-11 pl-9 pr-12 border border-border rounded text-sm text-text-primary focus:outline-none focus:border-primary tabular-nums font-semibold"
+              />
+              <span className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-xs font-bold text-text-muted pointer-events-none">
+                LB
               </span>
             </div>
 
-            {/* Slider with visual load brackets */}
-            <div className="space-y-1.5">
-              <input
-                type="range"
-                min="5000"
-                max="80000"
-                step="1000"
-                value={loadWeight || 38000}
-                onChange={(e) => setLoadWeight(Number(e.target.value))}
-                className="w-full h-2 bg-border rounded-lg appearance-none cursor-pointer accent-primary"
-              />
-              <div className="flex justify-between text-[10px] text-text-muted px-0.5">
-                <span>5k lb (Empty)</span>
-                <span>30k lb (No-Travel Wind Threshold)</span>
-                <span>40k lb (Severe Wind Threshold)</span>
-                <span>80k lb (Max GCW)</span>
-              </div>
-            </div>
-
-            {/* Quick-Pick Weight Presets */}
-            <div className="flex items-center gap-2 mt-2">
-              <span className="text-[10px] text-text-muted font-medium">Quick Presets:</span>
-              {[
-                { label: 'Empty (15k)', weight: 15000 },
-                { label: 'Mid-Weight (32k)', weight: 32000 },
-                { label: 'Standard (38k)', weight: 38000 },
-                { label: 'Max Legal (45k)', weight: 45000 },
-              ].map((preset) => (
-                <button
-                  key={preset.weight}
-                  type="button"
-                  onClick={() => setLoadWeight(preset.weight)}
-                  className={`text-[10px] font-semibold px-2 py-0.5 rounded border transition ${
-                    loadWeight === preset.weight
-                      ? 'bg-primary text-white border-primary shadow-xs'
-                      : 'border-border bg-background text-text-muted hover:text-text-primary hover:bg-surface'
-                  }`}
-                >
-                  {preset.label}
-                </button>
-              ))}
-            </div>
+            {/* Slider directly linked to the input above */}
+            <input
+              type="range"
+              min="5000"
+              max="80000"
+              step="500"
+              value={loadWeight || 38000}
+              onChange={(e) => setLoadWeight(Number(e.target.value))}
+              className="w-full h-2 bg-border rounded-lg appearance-none cursor-pointer accent-primary"
+              title="Slide to adjust load weight"
+            />
 
             {errors.loadWeight && (
               <p className="text-xs text-risk-severe mt-1.5 flex items-center gap-1">
