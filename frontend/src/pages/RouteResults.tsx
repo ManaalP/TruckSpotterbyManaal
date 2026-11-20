@@ -80,6 +80,13 @@ export const RouteResults: React.FC = () => {
   // Initial load
   useEffect(() => {
     const raw = sessionStorage.getItem('spotter_route_data')
+    const savedTz = sessionStorage.getItem('spotter_timezone') as USTimeZone | null
+    const savedDepInput = sessionStorage.getItem('spotter_departure_input')
+
+    if (savedTz && US_TIMEZONES.some((z) => z.id === savedTz)) {
+      setSelectedTimeZone(savedTz)
+    }
+
     if (raw) {
       try {
         const parsed: RouteAnalyzeResponse = JSON.parse(raw)
@@ -88,6 +95,15 @@ export const RouteResults: React.FC = () => {
         setDestination(parsed.destination.label)
         setLoadWeight(parsed.load_weight_lb)
         setIntervalMiles(parsed.interval_miles)
+
+        // Set departure time in the header
+        const activeTz = (savedTz && US_TIMEZONES.some((z) => z.id === savedTz)) ? savedTz : selectedTimeZone
+        if (savedDepInput) {
+          setDepartureInput(savedDepInput)
+        } else if (parsed.departure_time) {
+          setDepartureInput(getLocalInputStringForTimeZone(new Date(parsed.departure_time), activeTz))
+        }
+
         if (parsed.recommendation?.route_id) {
           setSelectedRouteId(parsed.recommendation.route_id)
         }

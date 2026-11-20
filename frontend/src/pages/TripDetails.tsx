@@ -145,6 +145,8 @@ export const TripDetails: React.FC = () => {
 
       const results = await analyzeRoutes(payload)
       sessionStorage.setItem('spotter_route_data', JSON.stringify(results))
+      sessionStorage.setItem('spotter_timezone', selectedTimeZone)
+      sessionStorage.setItem('spotter_departure_input', departureTime)
       navigate('/results')
     } catch (err: any) {
       setErrors({ form: err.message || 'Error calculating routes. Please try again.' })
