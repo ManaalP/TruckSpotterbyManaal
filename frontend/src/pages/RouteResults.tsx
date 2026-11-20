@@ -9,6 +9,12 @@ import { RiskBadge } from '../components/RiskBadge'
 import { ForecastSlider } from '../components/ForecastSlider'
 import { TruckLoader } from '../components/TruckLoader'
 import {
+  US_TIMEZONES,
+  type USTimeZone,
+  getLocalInputStringForTimeZone,
+  parseLocalInputToUTCISO,
+} from '../lib/timezone'
+import {
   Navigation,
   Weight,
   Calendar,
@@ -18,24 +24,29 @@ import {
   Wind,
   CloudRain,
   Snowflake,
-  ShieldAlert
+  ShieldAlert,
+  Globe
 } from 'lucide-react'
 
-// Default sample data for instant presentation
 const DEFAULT_ORIGIN = 'Chicago, IL'
 const DEFAULT_DESTINATION = 'Denver, CO'
 const DEFAULT_WEIGHT = 38000
 const DEFAULT_INTERVAL = 25
+const DEFAULT_TIMEZONE: USTimeZone = 'America/Chicago' // Central Time (CT)
 
 export const RouteResults: React.FC = () => {
+  // Selected US Timezone
+  const [selectedTimeZone, setSelectedTimeZone] = useState<USTimeZone>(DEFAULT_TIMEZONE)
+
   // Flight-style inline trip editor states
   const [origin, setOrigin] = useState(DEFAULT_ORIGIN)
   const [destination, setDestination] = useState(DEFAULT_DESTINATION)
-  const [departureTime, setDepartureTime] = useState(() => {
-    const d = new Date()
-    d.setMinutes(d.getMinutes() - d.getTimezoneOffset())
-    return d.toISOString().slice(0, 16)
+  
+  // Datetime input string initialized in US Central Time
+  const [departureInput, setDepartureInput] = useState(() => {
+    return getLocalInputStringForTimeZone(new Date(), DEFAULT_TIMEZONE)
   })
+
   const [loadWeight, setLoadWeight] = useState(DEFAULT_WEIGHT)
   const [intervalMiles, setIntervalMiles] = useState(DEFAULT_INTERVAL)
 
@@ -52,7 +63,7 @@ export const RouteResults: React.FC = () => {
   const [selectedCheckpointIndex, setSelectedCheckpointIndex] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  // Both sidebars open by default as requested: keep everything open
+  // Corridor Heatmap Drawer
   const [isHeatmapOpen, setIsHeatmapOpen] = useState(true)
   const [heatmapData, setHeatmapData] = useState<HeatmapResponse | null>(null)
   const [currentHour, setCurrentHour] = useState<number>(0)
@@ -62,7 +73,7 @@ export const RouteResults: React.FC = () => {
   const originRef = useRef<HTMLDivElement>(null)
   const destRef = useRef<HTMLDivElement>(null)
 
-  // Initial load: either restore from session or run initial query
+  // Initial load
   useEffect(() => {
     const raw = sessionStorage.getItem('spotter_route_data')
     if (raw) {
@@ -81,17 +92,17 @@ export const RouteResults: React.FC = () => {
       } catch (_) {}
     }
 
-    // Cold initial load with prefilled sample data
+    const utcDeparture = parseLocalInputToUTCISO(departureInput, DEFAULT_TIMEZONE)
     executeRouteAnalysis({
       originQuery: DEFAULT_ORIGIN,
       destQuery: DEFAULT_DESTINATION,
-      depTime: new Date(departureTime).toISOString(),
+      depTimeUTC: utcDeparture,
       weight: DEFAULT_WEIGHT,
       interval: DEFAULT_INTERVAL,
     })
   }, [])
 
-  // Close menus on outside click
+  // Close suggestions on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (originRef.current && !originRef.current.contains(e.target as Node)) {
@@ -128,7 +139,7 @@ export const RouteResults: React.FC = () => {
   const executeRouteAnalysis = async (params: {
     originQuery: string
     destQuery: string
-    depTime: string
+    depTimeUTC: string
     weight: number
     interval: number
   }) => {
@@ -137,7 +148,7 @@ export const RouteResults: React.FC = () => {
       const res = await analyzeRoutes({
         origin: params.originQuery,
         destination: params.destQuery,
-        departure_time: params.depTime,
+        departure_time: params.depTimeUTC,
         load_weight_lb: params.weight,
         interval_miles: params.interval,
       })
@@ -147,8 +158,6 @@ export const RouteResults: React.FC = () => {
         setSelectedRouteId(res.recommendation.route_id)
       }
       setIsEditingBar(false)
-
-      // Always update heatmap data when routes change
       loadCorridorHeatmap(res)
     } catch (e: any) {
       alert(e.message || 'Error calculating routes')
@@ -183,16 +192,17 @@ export const RouteResults: React.FC = () => {
 
   const selectedRoute = data?.routes.find((r) => r.id === selectedRouteId) || data?.routes[0]
   const currentFrame = heatmapData?.frames[currentHour]
+  const activeTzObj = US_TIMEZONES.find((z) => z.id === selectedTimeZone) || US_TIMEZONES[0]
 
   return (
     <div className="min-h-screen bg-background flex flex-col overflow-hidden relative">
-      {/* Flight-Style Search Header (Persistent & Directly Editable) */}
+      {/* Flight-Style Search Header */}
       <header className="border-b border-border bg-surface px-4 py-2.5 shadow-sm z-30">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          {/* Left: Origin -> Destination -> Date -> Weight Pill Selector */}
+          {/* Left: Origin -> Destination -> Date -> Timezone -> Weight -> Interval */}
           <div className="flex flex-wrap items-center gap-2 flex-1">
             {/* Origin Input */}
-            <div ref={originRef} className="relative min-w-[160px] flex-1 max-w-[240px]">
+            <div ref={originRef} className="relative min-w-[150px] flex-1 max-w-[220px]">
               <div className="flex items-center gap-1.5 h-9 px-2.5 rounded border border-border bg-background focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
                 <Navigation size={13} className="text-primary flex-shrink-0" />
                 <input
@@ -232,7 +242,7 @@ export const RouteResults: React.FC = () => {
             <span className="text-text-muted font-bold text-xs">→</span>
 
             {/* Destination Input */}
-            <div ref={destRef} className="relative min-w-[160px] flex-1 max-w-[240px]">
+            <div ref={destRef} className="relative min-w-[150px] flex-1 max-w-[220px]">
               <div className="flex items-center gap-1.5 h-9 px-2.5 rounded border border-border bg-background focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
                 <Navigation size={13} className="text-primary flex-shrink-0" />
                 <input
@@ -269,22 +279,44 @@ export const RouteResults: React.FC = () => {
               )}
             </div>
 
-            {/* Departure Datetime */}
-            <div className="flex items-center gap-1.5 h-9 px-2.5 rounded border border-border bg-background">
+            {/* Departure Datetime (In US Timezone) */}
+            <div className="flex items-center gap-1 h-9 px-2 rounded border border-border bg-background">
               <Calendar size={13} className="text-text-muted flex-shrink-0" />
               <input
                 type="datetime-local"
-                value={departureTime}
+                value={departureInput}
                 onChange={(e) => {
-                  setDepartureTime(e.target.value)
+                  setDepartureInput(e.target.value)
                   setIsEditingBar(true)
                 }}
                 className="bg-transparent text-xs font-semibold text-text-primary focus:outline-none tabular-nums"
+                title={`Departure wall-clock time in ${activeTzObj.label}`}
               />
             </div>
 
-            {/* Weight Input (With Left Icon, No overlap) */}
-            <div className="flex items-center gap-1.5 h-9 px-2.5 rounded border border-border bg-background w-32">
+            {/* Explicit US Timezone Selector (Matches Right Taskbar) */}
+            <div className="flex items-center gap-1 h-9 px-2 rounded border border-border bg-background">
+              <Globe size={13} className="text-primary flex-shrink-0" />
+              <select
+                value={selectedTimeZone}
+                onChange={(e) => {
+                  const newTz = e.target.value as USTimeZone
+                  setSelectedTimeZone(newTz)
+                  setIsEditingBar(true)
+                }}
+                className="bg-transparent text-xs font-bold text-primary focus:outline-none cursor-pointer"
+                title="Select USA Timezone applied across all ETAs, checkpoints, and forecast timeline"
+              >
+                {US_TIMEZONES.map((tz) => (
+                  <option key={tz.id} value={tz.id}>
+                    {tz.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Weight Input */}
+            <div className="flex items-center gap-1.5 h-9 px-2.5 rounded border border-border bg-background w-28">
               <Weight size={13} className="text-text-muted flex-shrink-0" />
               <input
                 type="number"
@@ -324,15 +356,16 @@ export const RouteResults: React.FC = () => {
 
             {/* Re-calculate button */}
             <button
-              onClick={() =>
+              onClick={() => {
+                const utcDeparture = parseLocalInputToUTCISO(departureInput, selectedTimeZone)
                 executeRouteAnalysis({
                   originQuery: origin,
                   destQuery: destination,
-                  depTime: new Date(departureTime).toISOString(),
+                  depTimeUTC: utcDeparture,
                   weight: Number(loadWeight),
                   interval: intervalMiles,
                 })
-              }
+              }}
               disabled={isLoading}
               className={`h-9 px-4 rounded text-xs font-bold transition flex items-center gap-1.5 ${
                 isEditingBar
@@ -351,7 +384,7 @@ export const RouteResults: React.FC = () => {
             </button>
           </div>
 
-          {/* Right: Corridor Heatmap Taskbar Toggle */}
+          {/* Right: Corridor Heatmap Taskbar Button */}
           <button
             onClick={toggleHeatmapPanel}
             className={`flex items-center gap-1.5 text-xs font-bold px-3.5 h-9 rounded transition border ${
@@ -373,7 +406,7 @@ export const RouteResults: React.FC = () => {
           <div className="absolute inset-0 z-50 bg-background/70 backdrop-blur-xs flex items-center justify-center p-4">
             <TruckLoader
               message="Calculating Weather-Aware Routes..."
-              subMessage="Routing truck, sampling atmospheric data, and evaluating crosswind rollover risk"
+              subMessage={`Evaluating corridors and crosswinds in ${activeTzObj.label}`}
             />
           </div>
         )}
@@ -399,15 +432,21 @@ export const RouteResults: React.FC = () => {
 
               {/* 3 Route Cards */}
               <div className="flex flex-col gap-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-text-muted">
-                  Route Alternatives ({data.routes.length})
-                </span>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-text-muted">
+                    Route Alternatives ({data.routes.length})
+                  </span>
+                  <span className="text-[11px] font-semibold text-primary">
+                    Times in {activeTzObj.short}
+                  </span>
+                </div>
                 {data.routes.map((r) => (
                   <RouteCard
                     key={r.id}
                     route={r}
                     isSelected={r.id === selectedRouteId}
                     isRecommended={r.id === data.recommendation.route_id}
+                    selectedTimeZone={selectedTimeZone}
                     onSelect={() => {
                       setSelectedRouteId(r.id)
                       setSelectedCheckpointIndex(null)
@@ -424,12 +463,13 @@ export const RouteResults: React.FC = () => {
                       Checkpoints ({selectedRoute.checkpoints.length})
                     </span>
                     <span className="text-[11px] text-text-muted">
-                      Every {data.interval_miles} mi
+                      Every {data.interval_miles} mi ({activeTzObj.short})
                     </span>
                   </div>
                   <CheckpointList
                     checkpoints={selectedRoute.checkpoints}
                     selectedCheckpointIndex={selectedCheckpointIndex}
+                    selectedTimeZone={selectedTimeZone}
                     onSelectCheckpoint={(idx) => setSelectedCheckpointIndex(idx)}
                   />
                 </div>
@@ -467,13 +507,18 @@ export const RouteResults: React.FC = () => {
                 <Layers size={15} className="text-primary" />
                 <span className="font-bold text-xs text-text-primary">0–48h Corridor Forecast</span>
               </div>
-              <button
-                onClick={() => setIsHeatmapOpen(false)}
-                className="p-1 rounded text-text-muted hover:text-text-primary hover:bg-background"
-                title="Collapse sidebar"
-              >
-                <X size={15} />
-              </button>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                  {activeTzObj.short}
+                </span>
+                <button
+                  onClick={() => setIsHeatmapOpen(false)}
+                  className="p-1 rounded text-text-muted hover:text-text-primary hover:bg-background"
+                  title="Collapse sidebar"
+                >
+                  <X size={15} />
+                </button>
+              </div>
             </div>
 
             {/* Heatmap Mode Toggles (Risk / Wind / Rain / Snow) */}
@@ -515,7 +560,7 @@ export const RouteResults: React.FC = () => {
                 <div className="py-8">
                   <TruckLoader
                     message="Sampling Forecast Grid..."
-                    subMessage="Calculating atmospheric corridor frames"
+                    subMessage={`Synchronizing hourly frames with ${activeTzObj.label}`}
                   />
                 </div>
               ) : (
@@ -523,17 +568,23 @@ export const RouteResults: React.FC = () => {
                   <ForecastSlider
                     currentHourIndex={currentHour}
                     totalHours={heatmapData?.total_hours || 49}
-                    displayTime={currentFrame?.display_time || 'Hour +0'}
+                    displayTime={`+${currentHour}h`}
+                    timeIso={currentFrame?.time_iso}
+                    selectedTimeZone={selectedTimeZone}
                     onChangeHour={(h) => setCurrentHour(h)}
-                    departureTimeStr={data?.departure_time ? new Date(data.departure_time).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : undefined}
-                    arrivalTimeStr={selectedRoute ? new Date(selectedRoute.summary.arrival_time).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : undefined}
+                    departureTimeStr={data?.departure_time}
+                    arrivalTimeStr={selectedRoute?.summary.arrival_time}
                   />
 
                   {/* Point Grid Summary for Active Hour */}
                   <div className="p-3 rounded-lg border border-border bg-background/50 flex flex-col gap-2">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-text-primary">Corridor Conditions ({currentFrame?.display_time})</span>
-                      <span className="text-[11px] text-text-muted">+{currentHour}h</span>
+                      <span className="font-semibold text-text-primary">
+                        Corridor Max Hazards (+{currentHour}h)
+                      </span>
+                      <span className="text-[11px] font-bold text-primary">
+                        {activeTzObj.short}
+                      </span>
                     </div>
 
                     <div className="grid grid-cols-3 gap-2 text-center pt-1 tabular-nums">
@@ -562,7 +613,7 @@ export const RouteResults: React.FC = () => {
 
                   {/* Micro instructions */}
                   <div className="text-[11px] text-text-muted leading-relaxed p-2.5 rounded bg-surface border border-border">
-                    Scrub the slider or click <strong>Play</strong> to simulate changing atmospheric conditions along the route corridor from departure to +48 hours.
+                    Times are synchronized to <strong>{activeTzObj.label}</strong>. Scrub or play to observe crosswind vectors and storms as the truck moves across the corridor.
                   </div>
                 </>
               )}

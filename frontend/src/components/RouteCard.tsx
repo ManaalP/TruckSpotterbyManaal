@@ -3,12 +3,15 @@ import type { RouteOption } from '../api/types'
 import { RiskBadge } from './RiskBadge'
 import { RiskBar } from './RiskBar'
 import { Award, Clock } from 'lucide-react'
+import type { USTimeZone } from '../lib/timezone'
+import { formatInTimeZone } from '../lib/timezone'
 
 interface RouteCardProps {
   route: RouteOption
   isSelected: boolean
   isRecommended: boolean
   onSelect: () => void
+  selectedTimeZone?: USTimeZone
 }
 
 function formatDuration(seconds: number): string {
@@ -22,8 +25,11 @@ export const RouteCard: React.FC<RouteCardProps> = ({
   isSelected,
   isRecommended,
   onSelect,
+  selectedTimeZone = 'America/Chicago',
 }) => {
   const { summary } = route
+
+  const formattedETA = formatInTimeZone(summary.arrival_time, selectedTimeZone)
 
   return (
     <div
@@ -64,9 +70,9 @@ export const RouteCard: React.FC<RouteCardProps> = ({
             ({summary.distance_miles.toFixed(0)} mi)
           </span>
         </div>
-        <div className="flex items-center gap-1 text-xs text-text-muted ml-auto">
+        <div className="flex items-center gap-1 text-xs text-text-muted ml-auto font-medium">
           <Clock size={13} />
-          <span>ETA: {new Date(summary.arrival_time).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
+          <span>ETA: {formattedETA}</span>
         </div>
       </div>
 

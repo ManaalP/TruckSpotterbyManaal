@@ -2,24 +2,27 @@ import React from 'react'
 import type { Checkpoint } from '../api/types'
 import { RiskBadge } from './RiskBadge'
 import { Wind, CloudRain, Snowflake } from 'lucide-react'
+import type { USTimeZone } from '../lib/timezone'
+import { formatInTimeZone } from '../lib/timezone'
 
 interface CheckpointListProps {
   checkpoints: Checkpoint[]
   selectedCheckpointIndex: number | null
   onSelectCheckpoint: (index: number) => void
+  selectedTimeZone?: USTimeZone
 }
 
 export const CheckpointList: React.FC<CheckpointListProps> = ({
   checkpoints,
   selectedCheckpointIndex,
   onSelectCheckpoint,
+  selectedTimeZone = 'America/Chicago',
 }) => {
   return (
     <div className="divide-y divide-border max-h-[420px] overflow-y-auto rounded border border-border bg-surface">
       {checkpoints.map((cp) => {
         const isSelected = selectedCheckpointIndex === cp.index
-        const etaDate = new Date(cp.eta)
-        const timeFormatted = etaDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+        const timeFormatted = formatInTimeZone(cp.eta, selectedTimeZone)
 
         return (
           <div
@@ -40,7 +43,7 @@ export const CheckpointList: React.FC<CheckpointListProps> = ({
             </div>
 
             <div className="flex items-center justify-between text-xs text-text-muted tabular-nums">
-              <span>ETA {timeFormatted}</span>
+              <span className="font-medium">ETA: {timeFormatted}</span>
               <div className="flex items-center gap-3">
                 <span className="flex items-center gap-1" title="Wind speed">
                   <Wind size={12} />

@@ -1,11 +1,7 @@
 """Corridor Heatmap Service generating 0-48h forecast payload.
 
-Strictly follows GEMINI.md Section 8 & 9:
-- POST /api/heatmap: body { route_ids or geometries, load_weight_lb }.
-- Returns all 49 hourly frames (0-48 h) in one payload for a corridor point grid
-  (sample points along the routes at the chosen interval, plus lateral offsets of about 15 miles each side).
-- Each point carries per-hour wind, rain, snow, and risk level.
-- Single payload allows 60 fps scrub with zero network refetches.
+Strictly follows GEMINI.md Section 8 & 9.
+All times formatted clearly with consistent timezone label (e.g. UTC / CST).
 """
 
 from datetime import datetime, timezone, timedelta
@@ -19,7 +15,6 @@ def generate_lateral_offset_point(
     lon2: float, lat2: float,
     offset_miles: float
 ) -> Tuple[float, float]:
-    """Calculate point offset laterally from line segment (lon1,lat1) -> (lon2,lat2)."""
     import math
     mid_lat = (lat1 + lat2) / 2.0
     dlat_per_mile = 1.0 / 69.0
@@ -45,9 +40,6 @@ def generate_corridor_grid(
     step_samples: int = 12,
     offset_miles: float = 18.0,
 ) -> List[Dict[str, Any]]:
-    """
-    Generate corridor grid points along route geometries + lateral offsets.
-    """
     points = []
     seen = set()
 
@@ -64,21 +56,18 @@ def generate_corridor_grid(
                 seen.add(center)
                 points.append({"lon": center[0], "lat": center[1], "type": "center"})
 
-            # Lateral + offset (North/East)
             p_pos = generate_lateral_offset_point(p1[0], p1[1], p2[0], p2[1], offset_miles)
             key_pos = (round(p_pos[0], 3), round(p_pos[1], 3))
             if key_pos not in seen:
                 seen.add(key_pos)
                 points.append({"lon": key_pos[0], "lat": key_pos[1], "type": "offset_pos"})
 
-            # Lateral - offset (South/West)
             p_neg = generate_lateral_offset_point(p1[0], p1[1], p2[0], p2[1], -offset_miles)
             key_neg = (round(p_neg[0], 3), round(p_neg[1], 3))
             if key_neg not in seen:
                 seen.add(key_neg)
                 points.append({"lon": key_neg[0], "lat": key_neg[1], "type": "offset_neg"})
 
-    # Limit maximum grid points to keep payload snappy and within Open-Meteo batch bounds
     return points[:65]
 
 
@@ -87,9 +76,6 @@ def get_heatmap_payload(
     load_weight_lb: float = 35000.0,
     start_time: datetime = None,
 ) -> Dict[str, Any]:
-    """
-    Generate 49-frame hourly weather heatmap for the corridor grid.
-    """
     if start_time is None:
         start_time = datetime.now(timezone.utc)
     elif start_time.tzinfo is None:
@@ -97,21 +83,16 @@ def get_heatmap_payload(
     else:
         start_time = start_time.astimezone(timezone.utc)
 
-    # Align to current hour
     base_hour = start_time.replace(minute=0, second=0, microsecond=0)
-    hour_strings = [
-        (base_hour + timedelta(hours=h)).strftime("%Y-%m-%dT%H:00")
-        for h in range(49)
-    ]
-
     grid = generate_corridor_grid(routes_coordinates)
     coords = [(p["lat"], p["lon"]) for p in grid]
 
-    # Batch fetch 3-day forecast (covers 49 hours)
     api_results = fetch_weather_batch_from_api(coords, forecast_days=3)
 
     frames = []
-    for h_idx, hour_str in enumerate(hour_strings):
+    for h_idx in range(49):
+        dt_utc = base_hour + timedelta(hours=h_idx)
+        hour_str = dt_utc.strftime("%Y-%m-%dT%H:00")
         frame_points = []
         for p_idx, pt in enumerate(grid):
             wind = 0.0
@@ -143,8 +124,7 @@ def get_heatmap_payload(
 
         frames.append({
             "hour_index": h_idx,
-            "time_iso": hour_str,
-            "display_time": (base_hour + timedelta(hours=h_idx)).strftime("%a %I:%M %p"),
+            "time_iso": dt_utc.isoformat(),
             "points": frame_points,
         })
 
