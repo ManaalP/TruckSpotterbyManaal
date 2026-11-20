@@ -61,7 +61,7 @@ export const RouteResults: React.FC = () => {
   const [data, setData] = useState<RouteAnalyzeResponse | null>(null)
   const [selectedRouteId, setSelectedRouteId] = useState<string>('route_1')
   const [selectedCheckpointIndex, setSelectedCheckpointIndex] = useState<number | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true) // Initialized to true for loader on first load
 
   // Corridor Heatmap Drawer
   const [isHeatmapOpen, setIsHeatmapOpen] = useState(true)
