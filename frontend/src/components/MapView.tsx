@@ -108,28 +108,44 @@ export const MapView: React.FC<MapViewProps> = ({
     if (!isHeatmapOpen || !heatmapPoints || heatmapPoints.length === 0) return
 
     heatmapPoints.forEach((pt) => {
-      let color = (RISK_COLORS as any)[pt.risk]?.hex || '#2E8B57'
-      let tooltipText = `Risk: ${pt.risk}`
+      // Check if this point has non-zero activity for the selected metric
+      let hasValue = false
+      let color = '#2E8B57'
+      let tooltipText = ''
 
-      if (heatmapMode === 'wind') {
+      if (heatmapMode === 'risk') {
+        // Show only points with weather/load elevation above baseline Low risk (score > 0)
+        hasValue = pt.score > 0
+        color = (RISK_COLORS as any)[pt.risk]?.hex || '#2E8B57'
+        tooltipText = `Risk: ${pt.risk}`
+      } else if (heatmapMode === 'wind') {
+        // Show gusts/winds above calm breeze (> 15 mph)
+        hasValue = pt.wind >= 15
         tooltipText = `Wind: ${pt.wind.toFixed(0)} mph`
         if (pt.wind >= 45) color = '#C62828'
         else if (pt.wind >= 35) color = '#E07A1F'
         else if (pt.wind >= 25) color = '#E5B800'
-        else color = '#2E8B57'
+        else color = '#60A5FA'
       } else if (heatmapMode === 'rain') {
+        // Show ONLY points with active rainfall (> 0)
+        hasValue = pt.rain > 0.01
         tooltipText = `Rain: ${pt.rain.toFixed(2)} in/h`
         if (pt.rain >= 0.5) color = '#C62828'
         else if (pt.rain >= 0.25) color = '#E07A1F'
-        else if (pt.rain >= 0.1) color = '#3B82F6'
+        else if (pt.rain >= 0.1) color = '#2563EB'
         else color = '#60A5FA'
       } else if (heatmapMode === 'snow') {
+        // Show ONLY points with active snowfall (> 0)
+        hasValue = pt.snow > 0.01
         tooltipText = `Snow: ${pt.snow.toFixed(1)} in/h`
         if (pt.snow >= 2.0) color = '#C62828'
         else if (pt.snow >= 1.0) color = '#0284C7'
         else if (pt.snow >= 0.5) color = '#38BDF8'
-        else color = '#BAE6FD'
+        else color = '#93C5FD'
       }
+
+      // Do NOT draw blips if data value is 0 (prevents visual clutter across clean highways)
+      if (!hasValue) return
 
       // Outer blur gradient circle
       L.circleMarker([pt.lat, pt.lon], {
