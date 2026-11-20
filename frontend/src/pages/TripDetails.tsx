@@ -7,7 +7,6 @@ import { useTheme } from '../lib/theme'
 import {
   US_TIMEZONES,
   type USTimeZone,
-  getLocalInputStringForTimeZone,
   parseLocalInputToUTCISO,
 } from '../lib/timezone'
 import {
@@ -22,23 +21,24 @@ import {
   ArrowUpDown,
 } from 'lucide-react'
 
-const DEFAULT_ORIGIN = 'Chicago, IL'
-const DEFAULT_DESTINATION = 'Denver, CO'
-const DEFAULT_WEIGHT = 38000
+const DEFAULT_ORIGIN = 'Cheyenne, WY'
+const DEFAULT_DESTINATION = 'Salt Lake City, UT'
+const DEFAULT_WEIGHT = 45000
 const DEFAULT_INTERVAL = 25
-const DEFAULT_TIMEZONE: USTimeZone = 'America/Chicago' // Central Time (CT)
+const DEFAULT_TIMEZONE: USTimeZone = 'America/Denver' // Mountain Time (MT)
 
 export const TripDetails: React.FC = () => {
   const navigate = useNavigate()
   const { theme, toggleTheme } = useTheme()
 
-  // Form inputs with prefilled defaults matching Stitch Spec
+  // Form inputs with prefilled defaults matching Stitch Spec & high-weather showcase
   const [originQuery, setOriginQuery] = useState(DEFAULT_ORIGIN)
   const [destinationQuery, setDestinationQuery] = useState(DEFAULT_DESTINATION)
   const [selectedTimeZone, setSelectedTimeZone] = useState<USTimeZone>(DEFAULT_TIMEZONE)
 
   const [departureTime, setDepartureTime] = useState(() => {
-    return getLocalInputStringForTimeZone(new Date(), DEFAULT_TIMEZONE)
+    // Default to the historical severe wind storm event on 2026-11-18 08:00 AM MT
+    return '2026-11-18T08:00'
   })
 
   const [loadWeight, setLoadWeight] = useState<number>(DEFAULT_WEIGHT)

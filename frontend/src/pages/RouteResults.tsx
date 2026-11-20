@@ -32,11 +32,11 @@ import {
   ArrowLeftRight,
 } from 'lucide-react'
 
-const DEFAULT_ORIGIN = 'Chicago, IL'
-const DEFAULT_DESTINATION = 'Denver, CO'
-const DEFAULT_WEIGHT = 38000
+const DEFAULT_ORIGIN = 'Cheyenne, WY'
+const DEFAULT_DESTINATION = 'Salt Lake City, UT'
+const DEFAULT_WEIGHT = 45000
 const DEFAULT_INTERVAL = 25
-const DEFAULT_TIMEZONE: USTimeZone = 'America/Chicago' // Central Time (CT)
+const DEFAULT_TIMEZONE: USTimeZone = 'America/Denver' // Mountain Time (MT)
 
 export const RouteResults: React.FC = () => {
   const { theme, toggleTheme } = useTheme()
@@ -47,9 +47,9 @@ export const RouteResults: React.FC = () => {
   const [origin, setOrigin] = useState(DEFAULT_ORIGIN)
   const [destination, setDestination] = useState(DEFAULT_DESTINATION)
   
-  // Datetime input string initialized in US Central Time
+  // Datetime input string initialized in US Mountain Time
   const [departureInput, setDepartureInput] = useState(() => {
-    return getLocalInputStringForTimeZone(new Date(), DEFAULT_TIMEZONE)
+    return '2026-11-18T08:00'
   })
 
   const [loadWeight, setLoadWeight] = useState(DEFAULT_WEIGHT)
