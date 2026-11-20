@@ -46,25 +46,21 @@ export const CheckpointList: React.FC<CheckpointListProps> = ({
               <span className="font-medium">ETA: {timeFormatted}</span>
               <div className="flex items-center gap-3">
                 <span className="flex items-center gap-1" title="Wind speed">
-                  <Wind size={12} />
-                  {cp.wind_mph.toFixed(0)} mph
+                  <Wind size={12} className="text-text-muted" />
+                  <span>{cp.wind_mph.toFixed(0)} mph</span>
                 </span>
-                {cp.rain_in_hr > 0 && (
-                  <span className="flex items-center gap-1 text-primary" title="Rainfall rate">
-                    <CloudRain size={12} />
-                    {cp.rain_in_hr.toFixed(2)} in/h
-                  </span>
-                )}
-                {cp.snow_in_hr > 0 && (
-                  <span className="flex items-center gap-1 text-cyan-600" title="Snowfall rate">
-                    <Snowflake size={12} />
-                    {cp.snow_in_hr.toFixed(1)} in/h
-                  </span>
-                )}
+                <span className={`flex items-center gap-1 ${cp.rain_in_hr > 0 ? 'text-blue-500 font-semibold' : 'text-text-muted/60'}`} title="Rainfall rate">
+                  <CloudRain size={12} />
+                  <span>{cp.rain_in_hr.toFixed(2)} in/h</span>
+                </span>
+                <span className={`flex items-center gap-1 ${cp.snow_in_hr > 0 ? 'text-cyan-400 font-semibold' : 'text-text-muted/60'}`} title="Snowfall rate">
+                  <Snowflake size={12} />
+                  <span>{cp.snow_in_hr.toFixed(1)} in/h</span>
+                </span>
               </div>
             </div>
 
-            {cp.reason && cp.risk_level !== 'Low' && (
+            {cp.reason && (
               <p className="text-[11px] text-text-muted bg-border/40 px-2 py-1 rounded">
                 {cp.reason}
               </p>
