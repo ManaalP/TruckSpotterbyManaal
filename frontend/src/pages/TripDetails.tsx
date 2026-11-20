@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { searchGeocode, analyzeRoutes } from '../api/client'
 import type { PlaceResult } from '../api/types'
 import { TruckLoader } from '../components/TruckLoader'
+import { useTheme } from '../lib/theme'
 import {
   US_TIMEZONES,
   type USTimeZone,
@@ -15,7 +16,9 @@ import {
   Sliders,
   AlertCircle,
   Globe,
-  ArrowRight
+  ArrowRight,
+  Sun,
+  Moon,
 } from 'lucide-react'
 
 const DEFAULT_ORIGIN = 'Chicago, IL'
@@ -26,6 +29,7 @@ const DEFAULT_TIMEZONE: USTimeZone = 'America/Chicago' // Central Time (CT)
 
 export const TripDetails: React.FC = () => {
   const navigate = useNavigate()
+  const { theme, toggleTheme } = useTheme()
 
   // Form inputs with prefilled defaults matching Stitch Spec
   const [originQuery, setOriginQuery] = useState(DEFAULT_ORIGIN)
@@ -148,14 +152,24 @@ export const TripDetails: React.FC = () => {
 
       {/* Centered Form Card (Stitch Visual Specification) */}
       <div className="w-full max-w-lg bg-surface rounded-xl border border-border p-6 shadow-sm relative z-10">
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="w-3 h-3 rounded-full bg-primary" />
-            <h1 className="text-xl font-bold text-text-primary tracking-tight">Trip Details</h1>
+        <div className="mb-6 flex items-start justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="w-3 h-3 rounded-full bg-primary" />
+              <h1 className="text-xl font-bold text-text-primary tracking-tight">Trip Details</h1>
+            </div>
+            <p className="text-xs text-text-muted leading-relaxed">
+              Configure origin, destination, departure time, and cargo weight to calculate weather-safe truck routes.
+            </p>
           </div>
-          <p className="text-xs text-text-muted leading-relaxed">
-            Configure origin, destination, departure time, and cargo weight to calculate weather-safe truck routes.
-          </p>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="p-2 rounded-lg border border-border bg-background text-text-primary hover:bg-surface transition-colors"
+            title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+          >
+            {theme === 'dark' ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} className="text-slate-600" />}
+          </button>
         </div>
 
         {errors.form && (

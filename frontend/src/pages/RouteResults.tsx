@@ -8,6 +8,7 @@ import { MapView } from '../components/MapView'
 import { RiskBadge } from '../components/RiskBadge'
 import { ForecastSlider } from '../components/ForecastSlider'
 import { TruckLoader } from '../components/TruckLoader'
+import { useTheme } from '../lib/theme'
 import {
   US_TIMEZONES,
   type USTimeZone,
@@ -25,7 +26,9 @@ import {
   CloudRain,
   Snowflake,
   ShieldAlert,
-  Globe
+  Globe,
+  Sun,
+  Moon,
 } from 'lucide-react'
 
 const DEFAULT_ORIGIN = 'Chicago, IL'
@@ -35,6 +38,7 @@ const DEFAULT_INTERVAL = 25
 const DEFAULT_TIMEZONE: USTimeZone = 'America/Chicago' // Central Time (CT)
 
 export const RouteResults: React.FC = () => {
+  const { theme, toggleTheme } = useTheme()
   // Selected US Timezone
   const [selectedTimeZone, setSelectedTimeZone] = useState<USTimeZone>(DEFAULT_TIMEZONE)
 
@@ -385,19 +389,30 @@ export const RouteResults: React.FC = () => {
             </button>
           </div>
 
-          {/* Right: Corridor Heatmap Taskbar Button */}
-          <button
-            type="button"
-            onClick={toggleHeatmapPanel}
-            className={`flex items-center gap-1.5 text-xs font-bold px-3.5 h-9 rounded transition cursor-pointer select-none border ${
-              isHeatmapOpen
-                ? 'bg-primary text-white border-primary shadow-xs'
-                : 'bg-surface text-text-primary border-border hover:bg-background'
-            }`}
-          >
-            <Layers size={14} />
-            <span>{isHeatmapOpen ? 'Heatmap Taskbar Open' : 'Open Heatmap'}</span>
-          </button>
+          {/* Right: Theme Toggle & Corridor Heatmap Taskbar Button */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="flex items-center justify-center w-9 h-9 rounded border border-border bg-surface text-text-primary hover:bg-background transition-colors"
+              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+            >
+              {theme === 'dark' ? <Sun size={15} className="text-amber-400" /> : <Moon size={15} className="text-slate-600" />}
+            </button>
+
+            <button
+              type="button"
+              onClick={toggleHeatmapPanel}
+              className={`flex items-center gap-1.5 text-xs font-bold px-3.5 h-9 rounded transition cursor-pointer select-none border ${
+                isHeatmapOpen
+                  ? 'bg-primary text-white border-primary shadow-xs'
+                  : 'bg-surface text-text-primary border-border hover:bg-background'
+              }`}
+            >
+              <Layers size={14} />
+              <span>{isHeatmapOpen ? 'Heatmap Taskbar Open' : 'Open Heatmap'}</span>
+            </button>
+          </div>
         </div>
       </header>
 
