@@ -54,8 +54,8 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Standard Free OpenStreetMap Inversion in Dark Mode */
-.dark .leaflet-tile-pane {
+/* Standard Free OpenStreetMap Inversion in Dark Mode (applied directly to map container) */
+.map-dark-mode .leaflet-tile-pane {
   filter: brightness(0.65) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
 }
 

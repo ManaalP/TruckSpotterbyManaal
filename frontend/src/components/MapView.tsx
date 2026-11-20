@@ -1,8 +1,9 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import type { RouteOption, HeatmapPoint } from '../api/types'
 import { RISK_COLORS } from '../lib/risk'
+import { Moon, Sun } from 'lucide-react'
 
 interface MapViewProps {
   routes: RouteOption[]
@@ -42,6 +43,25 @@ function createDirectionArrowIcon(angle: number, color: string = '#FFFFFF') {
   })
 }
 
+function createTruckMarkerIcon(angle: number) {
+  return L.divIcon({
+    className: 'route-truck-marker',
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    html: `
+      <div style="transform: rotate(${angle}deg); width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: #1F5FBF; border: 2px solid #FFFFFF; border-radius: 9999px; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />
+          <path d="M15 18H9" />
+          <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14" />
+          <circle cx="17" cy="18.5" r="2.5" fill="#FFFFFF" />
+          <circle cx="7" cy="18.5" r="2.5" fill="#FFFFFF" />
+        </svg>
+      </div>
+    `,
+  })
+}
+
 export const MapView: React.FC<MapViewProps> = ({
   routes,
   selectedRouteId,
@@ -53,6 +73,22 @@ export const MapView: React.FC<MapViewProps> = ({
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
+  const [isMapNightMode, setIsMapNightMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem('spotter_map_theme')
+    if (saved === 'dark') return true
+    if (saved === 'light') return false
+    // Default according to local time of day: night between 7:00 PM (19:00) and 6:00 AM (06:00)
+    const currentHour = new Date().getHours()
+    return currentHour >= 19 || currentHour < 6
+  })
+
+  const toggleMapTheme = () => {
+    setIsMapNightMode((prev) => {
+      const next = !prev
+      localStorage.setItem('spotter_map_theme', next ? 'dark' : 'light')
+      return next
+    })
+  }
   const tileLayerRef = useRef<L.TileLayer | null>(null)
   const routesGroupRef = useRef<L.FeatureGroup | null>(null)
   const heatmapGroupRef = useRef<L.FeatureGroup | null>(null)
@@ -238,6 +274,28 @@ export const MapView: React.FC<MapViewProps> = ({
         }
       }
 
+      // Small Navigation Truck Marker at origin/start of route
+      if (allCoords.length >= 2) {
+        const truckPt = allCoords[0]
+        const truckNextPt = allCoords[1]
+        const truckBearing = getBearingDegrees(
+          truckPt[1],
+          truckPt[0],
+          truckNextPt[1],
+          truckNextPt[0]
+        )
+
+        const truckMarker = L.marker([truckPt[1], truckPt[0]], {
+          icon: createTruckMarkerIcon(truckBearing),
+          zIndexOffset: 1000,
+        })
+        truckMarker.bindTooltip(
+          '<strong>Active Freight Carrier</strong><br/>Route Start Point',
+          { direction: 'top', offset: [0, -10] }
+        )
+        truckMarker.addTo(group)
+      }
+
       // 3. Checkpoints
       ;(activeRoute.checkpoints || []).forEach((cp) => {
         const isSelected = cp.index === selectedCheckpointIndex
@@ -277,8 +335,34 @@ export const MapView: React.FC<MapViewProps> = ({
   }, [routes, selectedRouteId, selectedCheckpointIndex])
 
   return (
-    <div className="relative w-full h-full min-h-[400px] rounded-lg overflow-hidden border border-border shadow-xs">
+    <div
+      className={`relative w-full h-full min-h-[400px] rounded-lg overflow-hidden border border-border shadow-xs ${
+        isMapNightMode ? 'map-dark-mode' : ''
+      }`}
+    >
       <div ref={mapContainerRef} className="w-full h-full z-0" />
+
+      {/* Floating Map Theme Toggle (Time of Day / Night Control) */}
+      <div className="absolute top-3 right-3 z-[1000] pointer-events-auto">
+        <button
+          type="button"
+          onClick={toggleMapTheme}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-surface/90 backdrop-blur-sm border border-border shadow-md text-xs font-semibold text-text-primary hover:bg-surface transition cursor-pointer"
+          title={`Toggle map mode (currently ${isMapNightMode ? 'Night Mode' : 'Day Mode'})`}
+        >
+          {isMapNightMode ? (
+            <>
+              <Moon size={14} className="text-amber-400" />
+              <span>Map Night</span>
+            </>
+          ) : (
+            <>
+              <Sun size={14} className="text-amber-500" />
+              <span>Map Day</span>
+            </>
+          )}
+        </button>
+      </div>
 
       {/* Floating Map Legend Indicator */}
       <div className="absolute bottom-3 left-3 z-[1000] bg-surface/95 backdrop-blur-sm border border-border rounded-md shadow-md p-2.5 max-w-[280px] text-xs pointer-events-auto">
