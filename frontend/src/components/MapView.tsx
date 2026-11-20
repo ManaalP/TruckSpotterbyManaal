@@ -342,22 +342,22 @@ export const MapView: React.FC<MapViewProps> = ({
     >
       <div ref={mapContainerRef} className="w-full h-full z-0" />
 
-      {/* Floating Map Theme Toggle (Neutral Minimal Glass Style) */}
+      {/* Floating Map Theme Toggle (Fixed Neutral Glass Styling) */}
       <div className="absolute top-3 right-3 z-[1000] pointer-events-auto">
         <button
           type="button"
           onClick={toggleMapTheme}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-surface border border-border shadow-md text-xs font-semibold text-text-primary hover:bg-background transition cursor-pointer select-none"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white text-slate-800 border border-slate-300 shadow-md text-xs font-semibold hover:bg-slate-50 transition cursor-pointer select-none"
           title={`Toggle map mode (currently ${isMapNightMode ? 'Night Mode' : 'Day Mode'})`}
         >
           {isMapNightMode ? (
             <>
-              <Moon size={13} className="text-text-muted" />
+              <Moon size={13} className="text-slate-600" />
               <span>Map Night</span>
             </>
           ) : (
             <>
-              <Sun size={13} className="text-text-muted" />
+              <Sun size={13} className="text-slate-600" />
               <span>Map Day</span>
             </>
           )}
@@ -365,8 +365,8 @@ export const MapView: React.FC<MapViewProps> = ({
       </div>
 
       {/* Floating Map Legend Indicator */}
-      <div className="absolute bottom-3 left-3 z-[1000] bg-surface/95 backdrop-blur-sm border border-border rounded-md shadow-md p-2.5 max-w-[280px] text-xs pointer-events-auto">
-        <div className="font-bold text-text-primary text-[11px] uppercase tracking-wider mb-1.5 flex items-center justify-between">
+      <div className="absolute bottom-3 left-3 z-[1000] bg-white text-slate-800 border border-slate-300 rounded-md shadow-md p-2.5 max-w-[280px] text-xs pointer-events-auto">
+        <div className="font-bold text-slate-900 text-[11px] uppercase tracking-wider mb-1.5 flex items-center justify-between">
           <span>Map Indicators</span>
           {isHeatmapOpen && (
             <span className="text-[10px] font-semibold text-primary capitalize px-1.5 py-0.5 rounded bg-primary/10">
@@ -376,36 +376,36 @@ export const MapView: React.FC<MapViewProps> = ({
         </div>
 
         {/* 1. Route Checkpoint Indicator */}
-        <div className="space-y-1 mb-2 pb-2 border-b border-border/60">
-          <span className="text-[10px] font-semibold text-text-muted block">Route Checkpoints</span>
+        <div className="space-y-1 mb-2 pb-2 border-b border-slate-200">
+          <span className="text-[10px] font-semibold text-slate-500 block">Route Checkpoints</span>
           <div className="grid grid-cols-2 gap-1 text-[10px]">
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-[#2E8B57] border border-white inline-block shadow-xs flex-shrink-0" />
-              <span className="text-text-primary">Low Risk</span>
+              <span className="text-slate-800">Low Risk</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-[#E5B800] border border-white inline-block shadow-xs flex-shrink-0" />
-              <span className="text-text-primary">Moderate</span>
+              <span className="text-slate-800">Moderate</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-[#E07A1F] border border-white inline-block shadow-xs flex-shrink-0" />
-              <span className="text-text-primary">High</span>
+              <span className="text-slate-800">High</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-[#C62828] border border-white inline-block shadow-xs flex-shrink-0" />
-              <span className="text-text-primary">Severe</span>
+              <span className="text-slate-800">Severe</span>
             </div>
           </div>
           <div className="flex items-center gap-1.5 pt-0.5">
             <span className="w-2.5 h-2.5 rounded-full bg-[#4A0E1A] border border-white inline-block shadow-xs flex-shrink-0" />
-            <span className="text-text-primary text-[10px]">No Travel (Blizzard / Storm)</span>
+            <span className="text-slate-800 text-[10px]">No Travel (Storm)</span>
           </div>
         </div>
 
         {/* 2. Heatmap Blip Indicators (When Heatmap Taskbar is open) */}
         {isHeatmapOpen && (
           <div className="space-y-1">
-            <span className="text-[10px] font-semibold text-text-muted block">
+            <span className="text-[10px] font-semibold text-slate-500 block">
               Corridor Hazard Blips ({heatmapMode.toUpperCase()})
             </span>
 

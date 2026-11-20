@@ -58,17 +58,18 @@
   .dark select,
   .dark textarea {
     color-scheme: dark;
+    color: #F8FAFC !important;
   }
 
   .dark input::placeholder,
   .dark textarea::placeholder {
-    color: var(--color-text-muted);
+    color: #94A3B8 !important;
     opacity: 0.8;
   }
 
   .dark select option {
-    background-color: var(--color-surface);
-    color: var(--color-text-primary);
+    background-color: #1E293B !important;
+    color: #F8FAFC !important;
   }
 }
 

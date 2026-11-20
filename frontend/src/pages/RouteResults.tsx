@@ -208,7 +208,7 @@ export const RouteResults: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2 flex-1">
             {/* Origin Input */}
             <div ref={originRef} className="relative min-w-[150px] flex-1 max-w-[220px]">
-              <div className="flex items-center gap-1.5 h-9 px-2.5 rounded border border-border bg-background focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
+              <div className="flex items-center gap-1.5 h-9 px-2.5 rounded border border-border bg-surface focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
                 <Navigation size={13} className="text-primary flex-shrink-0" />
                 <input
                   type="text"
@@ -223,7 +223,7 @@ export const RouteResults: React.FC = () => {
                     setIsEditingBar(true)
                   }}
                   placeholder="Origin"
-                  className="w-full bg-transparent text-xs font-semibold text-text-primary focus:outline-none truncate"
+                  className="w-full bg-transparent text-xs font-semibold text-text-primary placeholder:text-text-muted focus:outline-none truncate"
                 />
               </div>
               {showOriginMenu && originSuggestions.length > 0 && (
@@ -248,7 +248,7 @@ export const RouteResults: React.FC = () => {
 
             {/* Destination Input */}
             <div ref={destRef} className="relative min-w-[150px] flex-1 max-w-[220px]">
-              <div className="flex items-center gap-1.5 h-9 px-2.5 rounded border border-border bg-background focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
+              <div className="flex items-center gap-1.5 h-9 px-2.5 rounded border border-border bg-surface focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
                 <Navigation size={13} className="text-primary flex-shrink-0" />
                 <input
                   type="text"
@@ -263,7 +263,7 @@ export const RouteResults: React.FC = () => {
                     setIsEditingBar(true)
                   }}
                   placeholder="Destination"
-                  className="w-full bg-transparent text-xs font-semibold text-text-primary focus:outline-none truncate"
+                  className="w-full bg-transparent text-xs font-semibold text-text-primary placeholder:text-text-muted focus:outline-none truncate"
                 />
               </div>
               {showDestMenu && destSuggestions.length > 0 && (
@@ -285,7 +285,7 @@ export const RouteResults: React.FC = () => {
             </div>
 
             {/* Departure Datetime (In US Timezone) */}
-            <div className="flex items-center gap-1 h-9 px-2 rounded border border-border bg-background">
+            <div className="flex items-center gap-1 h-9 px-2 rounded border border-border bg-surface">
               <Calendar size={13} className="text-text-muted flex-shrink-0" />
               <input
                 type="datetime-local"
@@ -300,7 +300,7 @@ export const RouteResults: React.FC = () => {
             </div>
 
             {/* Explicit US Timezone Selector (Matches Right Taskbar) */}
-            <div className="flex items-center gap-1 h-9 px-2 rounded border border-border bg-background">
+            <div className="flex items-center gap-1 h-9 px-2 rounded border border-border bg-surface">
               <Globe size={13} className="text-primary flex-shrink-0" />
               <select
                 value={selectedTimeZone}
@@ -321,7 +321,7 @@ export const RouteResults: React.FC = () => {
             </div>
 
             {/* Weight Input with Slider Popover or Quick Increment */}
-            <div className="flex items-center gap-2 h-9 px-2.5 rounded border border-border bg-background">
+            <div className="flex items-center gap-2 h-9 px-2.5 rounded border border-border bg-surface">
               <Weight size={13} className="text-text-muted flex-shrink-0" />
               <input
                 type="range"
@@ -353,7 +353,7 @@ export const RouteResults: React.FC = () => {
             </div>
 
             {/* Interval Selector */}
-            <div className="flex items-center rounded border border-border h-9 overflow-hidden bg-background">
+            <div className="flex items-center rounded border border-border h-9 overflow-hidden bg-surface">
               {[10, 25, 50].map((intv) => (
                 <button
                   key={intv}
