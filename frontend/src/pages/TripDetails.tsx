@@ -19,6 +19,7 @@ import {
   ArrowRight,
   Sun,
   Moon,
+  ArrowUpDown,
 } from 'lucide-react'
 
 const DEFAULT_ORIGIN = 'Chicago, IL'
@@ -43,7 +44,10 @@ export const TripDetails: React.FC = () => {
   const [loadWeight, setLoadWeight] = useState<number>(DEFAULT_WEIGHT)
   const [intervalMiles, setIntervalMiles] = useState<number>(DEFAULT_INTERVAL)
 
-  // Autocomplete states & focus tracking
+  const handleSwapLocations = () => {
+    setOriginQuery(destinationQuery)
+    setDestinationQuery(originQuery)
+  }
   const [originSuggestions, setOriginSuggestions] = useState<PlaceResult[]>([])
   const [destSuggestions, setDestSuggestions] = useState<PlaceResult[]>([])
   const [showOriginMenu, setShowOriginMenu] = useState(false)
@@ -117,6 +121,12 @@ export const TripDetails: React.FC = () => {
       const depDate = new Date(departureTime)
       if (isNaN(depDate.getTime())) {
         errs.departureTime = 'Please provide a valid departure date and time.'
+      } else {
+        const now = new Date()
+        const daysDiff = (now.getTime() - depDate.getTime()) / (1000 * 3600 * 24)
+        if (daysDiff > 14) {
+          errs.departureTime = 'Historical weather verification is supported up to 14 days in the past.'
+        }
       }
     }
     if (!loadWeight || isNaN(loadWeight) || loadWeight < 1000) {
@@ -214,92 +224,107 @@ export const TripDetails: React.FC = () => {
         )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Origin */}
-          <div ref={originContainerRef} className="relative">
-            <label className="block text-xs font-semibold text-text-primary mb-1">
-              Origin Location
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                value={originQuery}
-                onFocus={() => setShowOriginMenu(true)}
-                onChange={(e) => {
-                  setOriginQuery(e.target.value)
-                  setShowOriginMenu(true)
-                }}
-                placeholder="City or logistics hub (e.g. Chicago, IL)"
-                className={`w-full h-11 pl-3 pr-10 border rounded text-sm bg-surface text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary ${
-                  errors.origin ? 'border-risk-severe' : 'border-border'
-                }`}
-              />
-              <Navigation size={15} className="absolute right-3.5 top-3.5 text-text-muted pointer-events-none" />
+          {/* Origin & Destination with Interchange Button */}
+          <div className="relative flex flex-col gap-3">
+            {/* Origin */}
+            <div ref={originContainerRef} className="relative">
+              <label className="block text-xs font-semibold text-text-primary mb-1">
+                Origin Location
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={originQuery}
+                  onFocus={() => setShowOriginMenu(true)}
+                  onChange={(e) => {
+                    setOriginQuery(e.target.value)
+                    setShowOriginMenu(true)
+                  }}
+                  placeholder="City or logistics hub (e.g. Chicago, IL)"
+                  className={`w-full h-11 pl-3 pr-10 border rounded text-sm bg-surface text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary ${
+                    errors.origin ? 'border-risk-severe' : 'border-border'
+                  }`}
+                />
+                <Navigation size={15} className="absolute right-3.5 top-3.5 text-text-muted pointer-events-none" />
+              </div>
+              {errors.origin && <p className="text-xs text-risk-severe mt-1">{errors.origin}</p>}
+
+              {/* Suggestions dropdown */}
+              {showOriginMenu && originSuggestions.length > 0 && (
+                <ul className="absolute z-20 w-full mt-1 bg-surface border border-border rounded shadow-lg max-h-48 overflow-y-auto divide-y divide-border/50">
+                  {originSuggestions.map((s, idx) => (
+                    <li
+                      key={idx}
+                      onMouseDown={() => {
+                        setOriginQuery(s.label)
+                        setShowOriginMenu(false)
+                      }}
+                      className="p-2.5 text-xs text-text-primary hover:bg-background cursor-pointer flex items-center gap-2"
+                    >
+                      <Navigation size={12} className="text-primary flex-shrink-0" />
+                      <span className="truncate">{s.label}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
-            {errors.origin && <p className="text-xs text-risk-severe mt-1">{errors.origin}</p>}
 
-            {/* Suggestions dropdown */}
-            {showOriginMenu && originSuggestions.length > 0 && (
-              <ul className="absolute z-20 w-full mt-1 bg-surface border border-border rounded shadow-lg max-h-48 overflow-y-auto divide-y divide-border/50">
-                {originSuggestions.map((s, idx) => (
-                  <li
-                    key={idx}
-                    onMouseDown={() => {
-                      setOriginQuery(s.label)
-                      setShowOriginMenu(false)
-                    }}
-                    className="p-2.5 text-xs text-text-primary hover:bg-background cursor-pointer flex items-center gap-2"
-                  >
-                    <Navigation size={12} className="text-primary flex-shrink-0" />
-                    <span className="truncate">{s.label}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          {/* Destination */}
-          <div ref={destContainerRef} className="relative">
-            <label className="block text-xs font-semibold text-text-primary mb-1">
-              Destination Location
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                value={destinationQuery}
-                onFocus={() => setShowDestMenu(true)}
-                onChange={(e) => {
-                  setDestinationQuery(e.target.value)
-                  setShowDestMenu(true)
-                }}
-                placeholder="City or logistics hub (e.g. Denver, CO)"
-                className={`w-full h-11 pl-3 pr-10 border rounded text-sm bg-surface text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary ${
-                  errors.destination ? 'border-risk-severe' : 'border-border'
-                }`}
-              />
-              <Navigation size={15} className="absolute right-3.5 top-3.5 text-text-muted pointer-events-none" />
+            {/* Interchange (Swap) Button */}
+            <div className="absolute right-3 top-[54px] z-10">
+              <button
+                type="button"
+                onClick={handleSwapLocations}
+                className="w-8 h-8 rounded-full border border-border bg-surface text-text-primary shadow-sm hover:bg-background hover:border-primary flex items-center justify-center transition-all cursor-pointer group"
+                title="Swap Origin and Destination"
+              >
+                <ArrowUpDown size={14} className="text-text-muted group-hover:text-primary transition-colors" />
+              </button>
             </div>
-            {errors.destination && (
-              <p className="text-xs text-risk-severe mt-1">{errors.destination}</p>
-            )}
 
-            {/* Suggestions dropdown */}
-            {showDestMenu && destSuggestions.length > 0 && (
-              <ul className="absolute z-20 w-full mt-1 bg-surface border border-border rounded shadow-lg max-h-48 overflow-y-auto divide-y divide-border/50">
-                {destSuggestions.map((s, idx) => (
-                  <li
-                    key={idx}
-                    onMouseDown={() => {
-                      setDestinationQuery(s.label)
-                      setShowDestMenu(false)
-                    }}
-                    className="p-2.5 text-xs text-text-primary hover:bg-background cursor-pointer flex items-center gap-2"
-                  >
-                    <Navigation size={12} className="text-primary flex-shrink-0" />
-                    <span className="truncate">{s.label}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
+            {/* Destination */}
+            <div ref={destContainerRef} className="relative">
+              <label className="block text-xs font-semibold text-text-primary mb-1">
+                Destination Location
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={destinationQuery}
+                  onFocus={() => setShowDestMenu(true)}
+                  onChange={(e) => {
+                    setDestinationQuery(e.target.value)
+                    setShowDestMenu(true)
+                  }}
+                  placeholder="City or logistics hub (e.g. Denver, CO)"
+                  className={`w-full h-11 pl-3 pr-10 border rounded text-sm bg-surface text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary ${
+                    errors.destination ? 'border-risk-severe' : 'border-border'
+                  }`}
+                />
+                <Navigation size={15} className="absolute right-3.5 top-3.5 text-text-muted pointer-events-none" />
+              </div>
+              {errors.destination && (
+                <p className="text-xs text-risk-severe mt-1">{errors.destination}</p>
+              )}
+
+              {/* Suggestions dropdown */}
+              {showDestMenu && destSuggestions.length > 0 && (
+                <ul className="absolute z-20 w-full mt-1 bg-surface border border-border rounded shadow-lg max-h-48 overflow-y-auto divide-y divide-border/50">
+                  {destSuggestions.map((s, idx) => (
+                    <li
+                      key={idx}
+                      onMouseDown={() => {
+                        setDestinationQuery(s.label)
+                        setShowDestMenu(false)
+                      }}
+                      className="p-2.5 text-xs text-text-primary hover:bg-background cursor-pointer flex items-center gap-2"
+                    >
+                      <Navigation size={12} className="text-primary flex-shrink-0" />
+                      <span className="truncate">{s.label}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
 
           {/* Departure Date/Time & USA Timezone */}

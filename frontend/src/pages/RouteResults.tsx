@@ -29,6 +29,7 @@ import {
   Globe,
   Sun,
   Moon,
+  ArrowLeftRight,
 } from 'lucide-react'
 
 const DEFAULT_ORIGIN = 'Chicago, IL'
@@ -260,7 +261,20 @@ export const RouteResults: React.FC = () => {
               )}
             </div>
 
-            <span className="text-text-muted font-bold text-xs">→</span>
+            {/* Interchange (Swap) Button */}
+            <button
+              type="button"
+              onClick={() => {
+                const prevOrigin = origin
+                setOrigin(destination)
+                setDestination(prevOrigin)
+                setIsEditingBar(true)
+              }}
+              className="w-7 h-7 rounded border border-border bg-surface text-text-muted hover:text-primary hover:border-primary flex items-center justify-center transition cursor-pointer flex-shrink-0"
+              title="Swap Origin and Destination"
+            >
+              <ArrowLeftRight size={12} />
+            </button>
 
             {/* Destination Input */}
             <div ref={destRef} className="relative min-w-[150px] flex-1 max-w-[220px]">

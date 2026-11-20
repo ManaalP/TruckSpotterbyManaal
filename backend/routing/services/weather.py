@@ -33,6 +33,7 @@ def make_wx_cache_key(lat: float, lon: float, hour_iso: str) -> str:
 def fetch_weather_batch_from_api(
     coords: List[Tuple[float, float]],
     forecast_days: int = 3,
+    past_days: int = 7,
 ) -> List[Dict[str, Any]]:
     if not coords:
         return []
@@ -48,6 +49,7 @@ def fetch_weather_batch_from_api(
         "precipitation_unit": "inch",
         "timezone": "UTC",
         "forecast_days": max(1, min(forecast_days, 7)),
+        "past_days": max(0, min(past_days, 14)),
     }
 
     try:
@@ -118,7 +120,19 @@ def get_weather_for_checkpoints(
             chunk = unique_keys[i : i + BATCH_SIZE]
             coords = [(k[0], k[1]) for k in chunk]
 
-            api_results = fetch_weather_batch_from_api(coords, forecast_days=3)
+            # Calculate forecast and past days based on arrival window
+            now_utc = datetime.now(timezone.utc)
+            min_eta = min((cp.get("eta_datetime", now_utc) for cp in checkpoints), default=now_utc)
+            max_eta = max((cp.get("eta_datetime", now_utc) for cp in checkpoints), default=now_utc)
+            if min_eta.tzinfo is None:
+                min_eta = min_eta.replace(tzinfo=timezone.utc)
+            if max_eta.tzinfo is None:
+                max_eta = max_eta.replace(tzinfo=timezone.utc)
+
+            past_days = max(0, min(14, int((now_utc - min_eta).total_seconds() / 86400) + 1)) if min_eta < now_utc else 0
+            forecast_days = max(1, min(14, int((max_eta - now_utc).total_seconds() / 86400) + 2)) if max_eta > now_utc else 1
+
+            api_results = fetch_weather_batch_from_api(coords, forecast_days=forecast_days, past_days=past_days)
 
             for j, k_tuple in enumerate(chunk):
                 r_lat, r_lon, target_hour = k_tuple
